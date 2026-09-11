@@ -42,6 +42,8 @@ import {
 } from 'react'
 
 const assetUrl = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`
+const whatsappContactUrl =
+  'https://wa.me/557536166626?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20com%20a%20GMAC%20sobre%20um%20projeto.'
 
 const navItems = [
   { label: 'Início', href: '#inicio' },
@@ -2116,7 +2118,9 @@ function Contact() {
                 </p>
               </div>
               <a
-                href="tel:+557536166626"
+                href={whatsappContactUrl}
+                target="_blank"
+                rel="noreferrer"
                 className="mt-4 flex items-center gap-3 text-lg font-black text-gmac-blue transition hover:text-gmac-orange"
               >
                 <Phone size={20} />
@@ -2126,7 +2130,9 @@ function Contact() {
 
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
               <a
-                href="tel:+557536166626"
+                href={whatsappContactUrl}
+                target="_blank"
+                rel="noreferrer"
                 className="inline-flex items-center justify-center gap-2 border border-gmac-navy bg-gmac-navy px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:-translate-y-0.5 hover:bg-gmac-blue"
               >
                 Ligar
