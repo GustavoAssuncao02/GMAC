@@ -1,6 +1,5 @@
 import {
   ArrowDown,
-  ArrowLeft,
   ArrowRight,
   AlertCircle,
   CheckCircle2,
@@ -1391,21 +1390,6 @@ function GalleryCard({
 }
 
 function Gallery() {
-  const carouselRef = useRef<HTMLDivElement>(null)
-
-  const scrollGallery = (direction: 'left' | 'right') => {
-    const carousel = carouselRef.current
-    if (!carousel) {
-      return
-    }
-
-    const scrollAmount = carousel.clientWidth * 0.86
-    carousel.scrollBy({
-      left: direction === 'right' ? scrollAmount : -scrollAmount,
-      behavior: 'smooth',
-    })
-  }
-
   return (
     <AnimatedSection
       id="galeria"
@@ -1436,7 +1420,6 @@ function Gallery() {
 
         <div className="relative mt-8 sm:mt-10 xl:hidden">
           <div
-            ref={carouselRef}
             className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {galleryItems.map((item, index) => (
@@ -1447,24 +1430,6 @@ function Gallery() {
           </div>
 
           <div className="pointer-events-none absolute bottom-5 right-0 top-0 w-20 bg-gradient-to-l from-slate-50 via-slate-50/86 to-transparent" />
-          <div className="absolute right-2 top-1/2 flex -translate-y-1/2 flex-col gap-2 sm:right-4">
-            <button
-              type="button"
-              onClick={() => scrollGallery('left')}
-              className="flex h-10 w-10 items-center justify-center border border-slate-200 bg-white/95 text-gmac-navy shadow-xl shadow-slate-400/20 backdrop-blur transition hover:-translate-x-0.5 hover:border-gmac-orange hover:text-gmac-orange focus:outline-none focus:ring-4 focus:ring-orange-100"
-              aria-label="Ver item anterior da galeria"
-            >
-              <ArrowLeft size={18} />
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollGallery('right')}
-              className="flex h-12 w-12 items-center justify-center border border-gmac-orange bg-gmac-orange text-white shadow-2xl shadow-orange-900/25 transition hover:translate-x-0.5 hover:bg-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-100"
-              aria-label="Ver próximo item da galeria"
-            >
-              <ArrowRight size={20} />
-            </button>
-          </div>
         </div>
       </div>
     </AnimatedSection>
