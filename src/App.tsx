@@ -7,9 +7,7 @@ import {
   ClipboardCheck,
   Cog,
   FileText,
-  Gauge,
   Hammer,
-  Handshake,
   Loader2,
   MapPin,
   Menu,
@@ -187,13 +185,34 @@ const galleryItems: Array<{
 
 const qualityItems: Array<{
   label: string
+  description: string
   icon: LucideIcon
 }> = [
-  { label: 'EXPERIÊNCIA', icon: Timer },
-  { label: 'PRECISÃO', icon: Gauge },
-  { label: 'COMPROMISSO', icon: Handshake },
-  { label: 'CONTROLE', icon: ScanLine },
-  { label: 'CONFIABILIDADE', icon: ShieldCheck },
+  {
+    label: 'Leitura técnica',
+    description: 'Entendimento do desenho, medidas e aplicação antes da fabricação.',
+    icon: FileText,
+  },
+  {
+    label: 'Processo adequado',
+    description: 'Usinagem, caldeiraria ou manutenção direcionada para cada necessidade.',
+    icon: Workflow,
+  },
+  {
+    label: 'Conferência',
+    description: 'Verificação de medidas, acabamento e encaixe durante a execução.',
+    icon: ScanLine,
+  },
+  {
+    label: 'Prazo combinado',
+    description: 'Organização da produção para cumprir o que foi alinhado com o cliente.',
+    icon: Timer,
+  },
+  {
+    label: 'Entrega confiável',
+    description: 'Peças e serviços finalizados com atenção ao uso real na operação.',
+    icon: ShieldCheck,
+  },
 ]
 
 const clientLogos = [
@@ -1417,8 +1436,11 @@ function Quality() {
   const reduceMotion = useReducedMotion()
 
   return (
-    <AnimatedSection className="relative overflow-hidden bg-gmac-ink px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-8 lg:py-28 xl:py-32">
-      <div className="industrial-grid absolute inset-0 opacity-40" />
+    <AnimatedSection
+      id="qualidade"
+      className="relative overflow-hidden bg-[#071a2c] px-4 py-16 text-white sm:bg-gmac-ink sm:px-6 sm:py-20 lg:px-8 lg:py-28 xl:py-32"
+    >
+      <div className="industrial-grid absolute inset-0 hidden opacity-35 sm:block" />
       <div className="absolute right-8 top-16 hidden h-52 w-52 rotate-45 border border-gmac-cyan/20 sm:block" />
       <div className="absolute bottom-10 left-10 hidden h-36 w-36 rotate-45 border-[14px] border-gmac-orange/10 sm:block" />
 
@@ -1430,6 +1452,10 @@ function Quality() {
           <h2 className="mt-5 text-balance text-3xl font-black leading-tight tracking-normal sm:text-4xl lg:text-5xl">
             PRECISÃO EM CADA DETALHE
           </h2>
+          <p className="mt-5 max-w-2xl text-base font-semibold leading-7 text-slate-200 sm:text-lg sm:leading-8">
+            Na prática, qualidade aparece no cuidado com o desenho, na escolha
+            do processo, na conferência das medidas e na entrega combinada.
+          </p>
         </div>
 
         <motion.div
@@ -1454,15 +1480,18 @@ function Quality() {
                   },
                 }}
                 whileHover={reduceMotion ? undefined : { y: -6 }}
-                className="group border border-white/10 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur sm:p-6"
+                className="group border border-white/14 bg-[#0d2b45] p-5 shadow-2xl shadow-black/25 sm:p-6"
               >
                 <div className="flex h-12 w-12 items-center justify-center border border-white/14 bg-gmac-navy text-gmac-orange transition group-hover:border-gmac-orange/70 group-hover:bg-gmac-orange group-hover:text-white">
                   <Icon size={23} />
                 </div>
-                <p className="mt-6 text-base font-black uppercase tracking-[0.1em] sm:mt-7 sm:text-lg sm:tracking-[0.12em]">
+                <p className="mt-6 text-base font-black uppercase tracking-[0.08em] sm:mt-7 sm:text-lg sm:tracking-[0.1em]">
                   {item.label}
                 </p>
-                <span className="mt-5 block h-px w-10 bg-gmac-orange transition-all duration-300 group-hover:w-20" />
+                <span className="mt-4 block h-px w-10 bg-gmac-orange transition-all duration-300 group-hover:w-20" />
+                <p className="mt-4 text-sm font-semibold leading-6 text-slate-200">
+                  {item.description}
+                </p>
               </motion.div>
             )
           })}
