@@ -724,7 +724,7 @@ function About() {
       id="gmac"
       className="relative overflow-hidden bg-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28 xl:py-32"
     >
-      <div className="absolute left-0 top-0 h-full w-1/3 bg-gmac-steel/60" />
+      <div className="absolute left-0 top-0 hidden h-full w-1/3 bg-gmac-steel/60 xl:block" />
       <div className="absolute -right-16 top-20 hidden h-44 w-44 rotate-45 border-[18px] border-gmac-orange/10 sm:block" />
       <div className="relative mx-auto grid max-w-7xl gap-10 xl:grid-cols-[0.95fr_1.05fr] xl:items-center">
         <div>
