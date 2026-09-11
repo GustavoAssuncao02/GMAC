@@ -875,6 +875,7 @@ function RoundLogoCarousel({
   const lastRef = useRef(0)
   const dragRef = useRef({ active: false, x: 0 })
   const [size, setSize] = useState({ width: imageWidth, height: imageHeight })
+  const [logosReady, setLogosReady] = useState(false)
 
   const items = images.length > 0 ? images : clientLogos
   const count = items.length
@@ -889,6 +890,37 @@ function RoundLogoCarousel({
     overflow: 'hidden',
     backfaceVisibility: 'hidden',
   }
+
+  useEffect(() => {
+    let cancelled = false
+
+    const preloadLogos = async () => {
+      await Promise.all(
+        items.map(
+          (logo) =>
+            new Promise<void>((resolve) => {
+              const image = new Image()
+              image.decoding = 'async'
+              image.onload = () => {
+                image.decode?.().finally(resolve) ?? resolve()
+              }
+              image.onerror = () => resolve()
+              image.src = logo.src
+            }),
+        ),
+      )
+
+      if (!cancelled) {
+        setLogosReady(true)
+      }
+    }
+
+    preloadLogos()
+
+    return () => {
+      cancelled = true
+    }
+  }, [items])
 
   const applyRingTransform = () => {
     const ring = ringRef.current
@@ -923,7 +955,7 @@ function RoundLogoCarousel({
     lastRef.current = 0
     applyRingTransform()
 
-    if (reduceMotion) return
+    if (reduceMotion || !logosReady) return
 
     const draw = (now: number) => {
       const dt = lastRef.current ? (now - lastRef.current) / 1000 : 0
@@ -949,7 +981,7 @@ function RoundLogoCarousel({
         cancelAnimationFrame(rafRef.current)
       }
     }
-  }, [degPerSec, radius, reduceMotion])
+  }, [degPerSec, logosReady, radius, reduceMotion])
 
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!drag) return
@@ -1021,12 +1053,17 @@ function RoundLogoCarousel({
                   className="flex h-full w-full items-center justify-center border border-slate-200 bg-white p-5 shadow-2xl shadow-slate-950/20 sm:p-7"
                   style={faceBase}
                 >
+                  <span className="absolute inset-x-4 top-1/2 -translate-y-1/2 text-center text-xs font-black uppercase tracking-[0.12em] text-slate-300">
+                    {logo.alt}
+                  </span>
                   <img
                     src={logo.src}
                     alt={logo.alt}
-                    className="h-full w-full select-none object-contain"
+                    className={`relative h-full w-full select-none object-contain transition-opacity duration-300 ${logosReady ? 'opacity-100' : 'opacity-0'}`}
                     draggable={false}
-                    loading="lazy"
+                    decoding="async"
+                    fetchPriority="high"
+                    loading="eager"
                   />
                 </div>
                 <div
@@ -1041,9 +1078,11 @@ function RoundLogoCarousel({
                   <img
                     src={logo.src}
                     alt=""
-                    className="h-full w-full select-none object-contain"
+                    className={`h-full w-full select-none object-contain transition-opacity duration-300 ${logosReady ? 'opacity-100' : 'opacity-0'}`}
                     draggable={false}
-                    loading="lazy"
+                    decoding="async"
+                    fetchPriority="high"
+                    loading="eager"
                   />
                 </div>
               </div>
