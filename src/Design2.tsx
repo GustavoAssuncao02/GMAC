@@ -116,15 +116,15 @@ const gmacMapsUrl = 'https://maps.app.goo.gl/3bDoAFrJBzZQBZNv7'
 const gmacMapsEmbedUrl =
   'https://www.google.com/maps?q=GMAC%20Metal%C3%BArgica%2C%20Feira%20de%20Santana%20BA&ll=-12.2958308,-38.9613785&z=17&output=embed'
 
-function Reveal({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+function Reveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
   const reduced = useReducedMotion()
 
   return (
     <motion.div
-      initial={reduced ? false : { opacity: 0, y: 28 }}
-      whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
+      initial={reduced ? false : { opacity: 0, y: 28, filter: 'blur(7px)' }}
+      whileInView={reduced ? undefined : { opacity: 1, y: 0, filter: 'blur(0px)' }}
       viewport={{ once: true, amount: 0.14 }}
-      transition={{ duration: 0.7, ease: 'easeOut' }}
+      transition={{ duration: 0.7, delay, ease: 'easeOut' }}
       className={className}
     >
       {children}
@@ -313,7 +313,7 @@ function StructureDesign2() {
 function ProcessDesign2() {
   return (
     <section id="processo" className="d2-section d2-process">
-      <div className="d2-shell"><Reveal><SectionIntro eyebrow="Processo" title="Do primeiro contato à entrega"><>Cada etapa organiza a solicitação para dar clareza ao orçamento, à produção, à inspeção e à entrega final.</></SectionIntro></Reveal><div className="d2-process-list">{processSteps.map(([number, title, description], index) => <Reveal key={number} className="d2-process-step"><span className="d2-process-number">{number}</span><div><small>Etapa {index + 1}</small><h3>{title}</h3><p>{description}</p></div></Reveal>)}</div></div>
+      <div className="d2-shell"><Reveal><SectionIntro eyebrow="Processo" title="Do primeiro contato à entrega"><>Cada etapa organiza a solicitação para dar clareza ao orçamento, à produção, à inspeção e à entrega final.</></SectionIntro></Reveal><div className="d2-process-list">{processSteps.map(([number, title, description], index) => <Reveal key={number} delay={index * 0.1} className="d2-process-step"><span className="d2-process-number">{number}</span><div><small>Etapa {index + 1}</small><h3>{title}</h3><p>{description}</p></div></Reveal>)}</div></div>
     </section>
   )
 }
