@@ -216,7 +216,7 @@ a {
 .d2-quote { background: #f1f2f1; }
 .d2-quote__grid { display: grid; grid-template-columns: .72fr 1.28fr; align-items: stretch; }
 .d2-quote__copy { padding: 4rem 3.5rem 4rem 0; }
-.d2-quote__copy .d2-section-intro h2 { font-size: clamp(2.5rem, 4vw, 4rem); }
+.d2-quote__copy .d2-section-intro h2 { color: #101619; font-size: clamp(2.5rem, 4vw, 4rem); font-weight: 900; }
 .d2-quote__copy .d2-section-intro p { color: #687073; }
 .d2-contact-lines { display: grid; gap: 0; margin-top: 3.2rem; }
 .d2-contact-lines a, .d2-contact-lines > div { display: flex; align-items: center; gap: 1rem; padding: 1.1rem 0; border-top: 1px solid #cfd3d2; color: #20282b; text-decoration: none; }
