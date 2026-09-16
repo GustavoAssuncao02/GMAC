@@ -114,7 +114,7 @@ a {
 .d2-kicker, .d2-eyebrow { display: inline-flex; align-items: center; gap: .9rem; color: var(--d2-orange-light); text-transform: uppercase; letter-spacing: .28em; font-size: .63rem; font-weight: 700; }
 .d2-eyebrow { color: var(--d2-orange); }
 .d2-eyebrow i { display: inline-block; width: 2.5rem; height: 2px; background: currentColor; }
-.d2-hero h1 { margin: 1.35rem 0 0; max-width: 42rem; font-size: clamp(2.85rem, 6vw, 5.8rem); line-height: .99; letter-spacing: -.065em; }
+.d2-hero h1 { margin: 1.35rem 0 0; max-width: 42rem; font-size: clamp(2.85rem, 6vw, 5.8rem); font-weight: 900; line-height: .99; letter-spacing: -.065em; }
 .d2-hero h1 em, .d2-section-intro h2 em { color: var(--d2-orange); font-style: normal; }
 .d2-hero__copy > p { max-width: 36rem; margin: 1.6rem 0 0; color: rgba(255,255,255,.77); font-size: 1.08rem; line-height: 1.65; }
 .d2-hero__actions { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 2.25rem; }
