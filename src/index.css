@@ -85,8 +85,8 @@ a {
 }
 .design2 *, .design2 *::before, .design2 *::after { box-sizing: border-box; }
 .d2-shell { width: min(100% - 5rem, 90rem); margin-inline: auto; position: relative; z-index: 1; }
-.d2-header { position: fixed; inset: 0 0 auto; z-index: 20; color: #fff; transition: background .35s ease, border-color .35s ease, box-shadow .35s ease; border-bottom: 1px solid rgba(255,255,255,.14); }
-.d2-header--scrolled { background: rgba(9,13,15,.91); border-bottom-color: rgba(255,255,255,.12); box-shadow: 0 14px 34px rgba(0,0,0,.22); backdrop-filter: blur(18px); }
+.d2-header { position: fixed; inset: 0 0 auto; z-index: 20; color: #fff; background: rgba(48,57,60,.94); transition: background .35s ease, border-color .35s ease, box-shadow .35s ease; border-bottom: 1px solid rgba(255,255,255,.2); }
+.d2-header--scrolled { background: rgba(39,48,51,.97); border-bottom-color: rgba(255,255,255,.18); box-shadow: 0 14px 34px rgba(0,0,0,.25); backdrop-filter: blur(18px); }
 .d2-header__inner { min-height: 5.8rem; display: flex; align-items: center; gap: 2.4rem; }
 .d2-logo { display: grid; place-items: center; width: 5.9rem; height: 5.9rem; flex: 0 0 auto; padding: 0; }
 .d2-logo img { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 4px rgba(255,255,255,.3)) drop-shadow(0 8px 14px rgba(0,0,0,.34)); }
