@@ -27,7 +27,8 @@ import {
 } from 'framer-motion'
 import { useEffect, useState, type FormEvent } from 'react'
 
-const assetUrl = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`
+const design2AssetBase = window.location.pathname.replace(/\/+$/, '').endsWith('/design2') ? '../' : import.meta.env.BASE_URL
+const assetUrl = (path: string) => `${design2AssetBase}${path.replace(/^\/+/, '')}`
 
 const whatsappContactUrl =
   'https://wa.me/557536166626?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20com%20a%20GMAC%20sobre%20um%20projeto.'
