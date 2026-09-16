@@ -197,6 +197,7 @@ a {
 .d2-project { position: relative; overflow: hidden; background: #0e1315; }
 .d2-project--1 { grid-column: span 2; grid-row: span 2; }
 .d2-project--4 { grid-column: span 2; }
+.d2-project--5, .d2-project--6 { grid-column: span 2; }
 .d2-project img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .7s ease; }
 .d2-project:hover img { transform: scale(1.07); }
 .d2-project__veil { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(7,11,13,.9), transparent 65%); }
@@ -322,6 +323,7 @@ a {
   .d2-project-grid { grid-template-columns: 1fr 1fr; grid-auto-rows: 12rem; }
   .d2-project--1 { grid-column: span 2; }
   .d2-project--4 { grid-column: span 2; }
+  .d2-project--5, .d2-project--6 { grid-column: span 1; }
   .d2-project__caption h3 { font-size: 1rem; }
   .d2-quality-grid { gap: .7rem; }
   .d2-quality-card { min-height: auto; }
