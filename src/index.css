@@ -166,6 +166,7 @@ a {
 .d2-service-card { grid-column: span 2; background: var(--d2-panel); border: 1px solid rgba(255,255,255,.11); transition: transform .35s ease, border-color .35s ease; }
 .d2-service-card:hover { transform: translateY(-8px); border-color: rgba(255,107,26,.65); }
 .d2-service-card--featured { grid-column: span 3; }
+.d2-service-card:nth-child(2) { grid-column: span 3; }
 .d2-service-image { position: relative; overflow: hidden; }
 .d2-service-image::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(8,12,14,.72), transparent 60%); }
 .d2-service-image img { display: block; width: 100%; height: 13rem; object-fit: cover; transition: transform .7s ease; }
@@ -310,7 +311,7 @@ a {
   .d2-client-window { padding-bottom: 4.5rem; }
   .d2-client-logo { width: 10.5rem; height: 5.8rem; }
   .d2-service-grid, .d2-quality-grid { grid-template-columns: 1fr; }
-  .d2-service-card, .d2-service-card--featured { grid-column: auto; }
+  .d2-service-card, .d2-service-card--featured, .d2-service-card:nth-child(2) { grid-column: auto; }
   .d2-service-card--featured .d2-service-image img, .d2-service-image img { height: 13.5rem; }
   .d2-structure { min-height: 40rem; }
   .d2-structure__content { align-items: start; flex-direction: column; padding: 5.2rem 0; }
