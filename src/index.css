@@ -143,7 +143,6 @@ a {
 .d2-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; margin-top: 3rem; }
 .d2-metrics > div { padding: 1.35rem 1.1rem; background: #fff; border: 1px solid #dfe2e1; }
 .d2-metrics strong { display: block; color: #161d20; font-size: 1.35rem; line-height: 1; letter-spacing: -.06em; }
-.d2-metrics strong:first-letter { color: var(--d2-orange); }
 .d2-metrics strong span { color: var(--d2-orange); }
 .d2-metrics small { display: block; margin-top: .8rem; color: #737a7c; font-size: .7rem; line-height: 1.35; }
 .d2-about__visual { position: relative; }
