@@ -172,11 +172,11 @@ a {
 .d2-service-card--featured .d2-service-image img { height: 16rem; }
 .d2-service-card:hover .d2-service-image img { transform: scale(1.06); }
 .d2-service-image span { position: absolute; z-index: 1; left: 1.2rem; bottom: 1.1rem; display: grid; place-items: center; width: 2.8rem; height: 2.8rem; color: var(--d2-orange); background: #10191c; border: 1px solid rgba(255,255,255,.17); }
-.d2-service-body { padding: 1.45rem 1.4rem 1.7rem; }
+.d2-service-body { display: flex; flex-direction: column; padding: 1.2rem 1.25rem 1.35rem; }
 .d2-service-body small, .d2-project__caption small, .d2-process-step small { color: var(--d2-orange-light); text-transform: uppercase; letter-spacing: .18em; font-size: .6rem; font-weight: 700; }
 .d2-service-body h3 { margin: .65rem 0 0; font-size: 1.38rem; line-height: 1.05; letter-spacing: -.045em; }
-.d2-service-body p { min-height: 4.6rem; margin: .85rem 0 0; color: rgba(255,255,255,.56); font-size: .86rem; line-height: 1.55; }
-.d2-service-body a { display: inline-flex; align-items: center; gap: .55rem; margin-top: 1.3rem; color: var(--d2-orange-light); font-size: .75rem; font-weight: 700; text-decoration: none; transition: gap .25s ease; }
+.d2-service-body p { margin: .75rem 0 0; color: rgba(255,255,255,.56); font-size: .86rem; line-height: 1.55; }
+.d2-service-body a { display: inline-flex; align-items: center; gap: .55rem; margin-top: 1.1rem; color: var(--d2-orange-light); font-size: .75rem; font-weight: 700; text-decoration: none; transition: gap .25s ease; }
 .d2-service-body a:hover { gap: .85rem; }
 .d2-structure { position: relative; min-height: 38rem; display: flex; align-items: center; overflow: hidden; color: #fff; background: var(--d2-ink); }
 .d2-structure > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.65); }
