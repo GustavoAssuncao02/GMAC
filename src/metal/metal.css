@@ -1,0 +1,161 @@
+.metal-scroll { position: relative; height: 100svh; background: #080b0e; color: #f5f5f4; }
+.metal-stage { position: relative; height: 100svh; overflow: hidden; isolation: isolate; background: radial-gradient(ellipse at 73% 78%, #30353a88 0%, transparent 35%), radial-gradient(ellipse at 72% 46%, #192128 0%, #0d1216 35%, #07090b 76%); }
+.metal-atmosphere { position: absolute; inset: 0; opacity: var(--metal-light, .24); background: radial-gradient(ellipse at 80% 70%, #d78c5238, transparent 50%); pointer-events: none; }
+.metal-canvas { pointer-events: none; position: absolute; inset: 0; width: 100%; height: 100%; }
+.metal-fallback { position: absolute; width: min(43vw, 620px); top: 24%; right: 8%; filter: drop-shadow(0 35px 25px #000); }
+.metal-stage[data-ready="true"] .metal-fallback { display: none; }
+.metal-quality { margin-top: 28px; max-width: 320px; }
+.metal-quality-heading { display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid #ffffff1a; color: #91a39e; font-size: 9px; letter-spacing: .13em; }
+.metal-quality-heading > span:last-child { color: #79d7b5; font-variant-numeric: tabular-nums; }
+.metal-quality-list { display: grid; gap: 3px; list-style: none; padding: 10px 0 0; margin: 0; }
+.metal-quality-list li { display: flex; align-items: center; gap: 11px; min-height: 33px; opacity: var(--row-reveal, 0); transform: translateY(calc((1 - var(--row-reveal, 0)) * 7px)); font-size: 12px; color: #8c979e; }
+.metal-quality-icon { display: grid; place-items: center; width: 20px; height: 20px; flex: 0 0 20px; border: 1px solid #ffffff30; border-radius: 50%; }
+.metal-quality-icon svg { width: 15px; height: 15px; fill: none; stroke: #9aefcd; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.metal-quality-icon path { stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--check-progress, 0)); }
+.metal-quality-list li[data-status="checking"] { color: #f3f5f4; }
+.metal-quality-list li[data-status="checking"] .metal-quality-icon { border-color: #78d5b3; }
+.metal-quality-list li[data-status="verified"] { color: #dae8e2; }
+.metal-quality-list li[data-status="verified"] .metal-quality-icon { border-color: #5caf91; background: #2e896729; }
+.metal-quality-list small { margin-left: auto; font-size: 9px; color: #76cda9; opacity: var(--check-progress, 0); }
+.metal-topline { position: absolute; left: 6%; right: 6%; top: max(110px, 16svh); display: flex; justify-content: space-between; align-items: center; gap: 20px; color: #c7cbd0; font-size: 10px; font-weight: 600; letter-spacing: .17em; }
+.metal-topline > span { display: flex; align-items: center; gap: 12px; }
+.metal-topline i { width: 21px; height: 2px; background: #f47a20; }
+.metal-topline a { display: flex; align-items: center; gap: 9px; letter-spacing: .02em; color: #a3a9ae; padding: 10px 0; }
+.metal-topline a:hover { color: white; }
+.metal-copy-area { position: absolute; inset: 0; pointer-events: none; }
+.metal-copy { position: absolute; left: 10%; top: 35%; width: 31%; max-width: 470px; transform-origin: left center; will-change: transform, opacity; }
+.metal-copy h2 { margin: 0; white-space: pre-line; font-size: clamp(26px, 3.1vw, 52px); font-weight: 400; line-height: 1.13; letter-spacing: -.04em; text-wrap: balance; }
+.metal-copy--hero_intro h2, .metal-copy--quality_big h2, .metal-copy--custom h2, .metal-copy--final h2 { font-weight: 500; font-size: clamp(28px, 3.15vw, 54px); }
+.metal-label { margin: 0 0 25px; color: #f49b52; font-size: 11px; letter-spacing: .16em; font-weight: 600; }
+.metal-body { max-width: 290px; margin: 25px 0 0; padding-left: 19px; border-left: 2px solid #e67b28; font-size: clamp(13px, 1.04vw, 16px); line-height: 1.7; color: #aab1b8; }
+.metal-copy--process_labels { top: auto; bottom: 22%; width: 80%; max-width: none; }
+.metal-copy--process_labels h2 { font-size: 14px; line-height: 1.8; letter-spacing: .13em; }
+.metal-copy--raw, .metal-copy--bend, .metal-copy--finish, .metal-copy--quality, .metal-copy--custom { top: 59%; }
+.metal-copy--raw h2, .metal-copy--bend h2, .metal-copy--finish h2, .metal-copy--quality h2, .metal-copy--custom h2 { font-size: clamp(24px, 2.5vw, 40px); }
+.metal-cta { z-index: 5; position: absolute; left: 7%; top: 68%; display: inline-flex; align-items: center; justify-content: center; gap: 26px; padding: 17px 25px; color: #fff; background: #e86d15; border: 1px solid #ff9f53; font-size: 13px; font-weight: 600; border-radius: 3px; }
+.metal-cta:hover { background: #f5832f; }
+.metal-cta:focus-visible, .metal-topline a:focus-visible { outline: 2px solid #fff; outline-offset: 6px; }
+.metal-process-icons { position: absolute; bottom: 19%; left: 7%; display: flex; gap: 26px; opacity: 0; transform-origin: left; }
+.metal-process-icons span { display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: #bdc4ca; }
+.metal-process-icons svg { color: #d9965b; }
+.metal-bottomline { pointer-events: none; position: absolute; bottom: max(45px, 6svh); left: 6%; right: 6%; display: flex; align-items: end; justify-content: space-between; gap: 20px; color: #8c959e; }
+.metal-scroll-hint { display: flex; align-items: center; gap: 13px; font-size: 11px; line-height: 1.65; }
+.metal-scroll-hint strong { color: #e4e6e8; font-weight: 400; }
+.metal-scroll-hint > svg { margin-left: 16px; }
+.metal-mouse { width: 21px; height: 33px; border: 1px solid #9ca6af; border-radius: 12px; position: relative; }
+.metal-mouse::after { content: ''; width: 2px; height: 7px; background: #f47a20; position: absolute; left: 8px; top: 6px; }
+.metal-signature { font-size: 9px; letter-spacing: .19em; }
+.metal-counter { font-size: 11px; font-variant-numeric: tabular-nums; letter-spacing: .1em; }
+.metal-progress { position: absolute; left: 6%; right: 6%; bottom: 3svh; height: 1px; background: #ffffff18; }
+.metal-progress > div { height: 100%; background: #ef893a; transform: scaleX(0); transform-origin: left; }
+.metal-scroll[data-reduced="true"] { height: 100svh; min-height: 680px; }
+.metal-scroll[data-reduced="true"] .metal-stage { position: relative; min-height: 680px; }
+@media (min-width: 768px) and (max-width: 1199px) { .metal-scroll { height: 100svh; } }
+@media (max-width: 767px) {
+  .metal-scroll { height: 100svh; }
+  .metal-topline { top: 100px; left: 7%; right: 7%; font-size: 8px; letter-spacing: .1em; }
+  .metal-topline a { font-size: 9px; }
+  .metal-topline i { width: 12px; }
+  .metal-copy { left: 10%; top: 23%; width: 82%; max-width: none; }
+  .metal-copy h2, .metal-copy--hero_intro h2, .metal-copy--quality_big h2, .metal-copy--custom h2, .metal-copy--final h2 { font-size: clamp(25px, 7.3vw, 36px); line-height: 1.13; max-width: 340px; }
+  .metal-label { font-size: 9px; margin-bottom: 15px; }
+  .metal-body { font-size: 12px; line-height: 1.55; margin-top: 16px; max-width: 290px; }
+  .metal-cta { top: auto; bottom: max(65px, calc(env(safe-area-inset-bottom) + 45px)); left: 7%; padding: 13px 21px; font-size: 12px; }
+  .metal-bottomline { bottom: max(24px, env(safe-area-inset-bottom)); left: 7%; right: 7%; }
+  .metal-signature { display: none; }
+  .metal-scroll-hint { font-size: 10px; }
+  .metal-progress { bottom: 12px; }
+  .metal-process-icons { left: 7%; right: 7%; bottom: 13%; gap: 0; justify-content: space-between; }
+  .metal-process-icons span { font-size: 7px; }
+  .metal-copy--process_labels { top: auto; bottom: 21%; }
+  .metal-copy--process_labels h2 { font-size: 11px; }
+  .metal-copy--raw, .metal-copy--bend, .metal-copy--finish, .metal-copy--quality, .metal-copy--custom { top: 38%; }
+  .metal-copy--raw h2, .metal-copy--bend h2, .metal-copy--finish h2, .metal-copy--quality h2, .metal-copy--custom h2 { font-size: 22px; }
+  .metal-copy--raw .metal-body, .metal-copy--bend .metal-body, .metal-copy--finish .metal-body, .metal-copy--quality .metal-body { margin-top: 9px; font-size: 11px; }
+  .metal-canvas { clip-path: inset(46% 0 0); }
+  .metal-fallback { width: 70%; top: 48%; right: 10%; }
+}
+@media (max-height: 620px) and (min-width: 768px) {
+  .metal-topline { top: 90px; }
+  .metal-copy { top: 30%; }
+  .metal-copy h2 { font-size: 29px; }
+  .metal-body { margin-top: 14px; }
+  .metal-cta { top: 74%; padding: 10px 20px; }
+  .metal-quality { margin-top: 16px; }
+  .metal-quality-list { gap: 1px; }
+  .metal-quality-list li { min-height: 25px; font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .metal-scroll { height: 100svh; min-height: 680px; }
+  .metal-stage { position: relative; min-height: 680px; }
+}
+
+/* Stage navigation: one resting composition per manufacturing step. */
+.metal-scroll { height: 100svh; }
+.metal-copy, .metal-copy--raw, .metal-copy--bend, .metal-copy--finish, .metal-copy--quality, .metal-copy--custom { top: 34%; left: 7%; }
+.metal-step-nav { position: absolute; bottom: max(25px, env(safe-area-inset-bottom)); left: 6%; right: 6%; display: flex; gap: 8px; }
+.metal-step-nav button { display: flex; align-items: center; justify-content: center; gap: 9px; flex: 1; min-width: 0; min-height: 44px; color: #949da5; border-top: 2px solid #ffffff20; cursor: pointer; background: transparent; transition: color .2s, border-color .2s; }
+.metal-step-nav button span { font-size: 11px; font-variant-numeric: tabular-nums; }
+.metal-step-nav button small { display: none; font-size: 11px; white-space: nowrap; }
+.metal-step-nav button[aria-current="step"] { flex: 2.5; color: #fff; border-color: #f47a20; }
+.metal-step-nav button[aria-current="step"] small { display: block; }
+.metal-step-nav button:hover { color: #f49b52; border-color: #f49b52; }
+.metal-step-nav button:focus-visible { outline: 2px solid #f49b52; outline-offset: 3px; }
+.metal-bottomline { bottom: 110px; }
+.metal-scroll[data-reduced="true"] .metal-step-nav { display: none; }
+@media (max-width: 767px) {
+  .metal-scroll { height: 100svh; }
+  .metal-copy, .metal-copy--raw, .metal-copy--bend, .metal-copy--finish, .metal-copy--quality, .metal-copy--custom { top: 23%; left: 7%; }
+  .metal-step-nav { bottom: max(16px, env(safe-area-inset-bottom)); left: 5%; right: 5%; gap: 3px; }
+  .metal-step-nav button[aria-current="step"] { flex: 1; }
+  .metal-step-nav button[aria-current="step"] small { display: none; }
+  .metal-bottomline { bottom: 75px; }
+  .metal-scroll-hint, .metal-signature { display: none; }
+  .metal-cta { bottom: 180px; }
+  .metal-canvas { clip-path: inset(43% 0 0); }
+}
+@media (prefers-reduced-motion: reduce) { .metal-scroll { height: 100svh; } }
+@media (max-width: 767px) {
+  .metal-stage[data-step="9"] .metal-cta { bottom: 190px; }
+  .metal-stage[data-step="9"] .metal-counter { visibility: hidden; }
+  .metal-quality { margin-top: 16px; max-width: none; }
+  .metal-quality-heading { font-size: 8px; padding-bottom: 7px; }
+  .metal-quality-list { grid-template-columns: 1fr 1fr; gap: 5px 10px; padding-top: 8px; }
+  .metal-quality-list li { font-size: 10px; min-height: 27px; gap: 7px; }
+  .metal-quality-list small { display: none; }
+  .metal-quality-icon { width: 17px; height: 17px; flex-basis: 17px; }
+  .metal-quality-icon svg { width: 13px; height: 13px; }
+}
+
+.metal-stage:not([data-ready="true"]) .metal-canvas { visibility: hidden; }
+
+@keyframes metal-cta-reveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.metal-stage[data-step="9"] .metal-cta { top: auto; bottom: 190px; animation: metal-cta-reveal 480ms ease both; }
+@media (max-width: 767px) {
+  .metal-stage[data-step="9"] .metal-cta { bottom: 132px; }
+}
+
+/* Horizontal gestures leave vertical page scrolling native. */
+.metal-stage { min-height: 700px; touch-action: pan-y pinch-zoom; cursor: grab; user-select: none; }
+.metal-scroll { min-height: 700px; }
+.metal-stage[data-dragging="true"] { cursor: grabbing; }
+.metal-stage:focus-visible { outline: 2px solid #f49b52; outline-offset: -3px; }
+.metal-arrows { position: absolute; right: 6%; bottom: 100px; display: flex; gap: 10px; }
+.metal-arrows button { display: grid; place-items: center; width: 46px; height: 46px; border: 1px solid #ffffff50; border-radius: 50%; background: #121a21; color: white; cursor: pointer; }
+.metal-arrows button:hover:not(:disabled) { border-color: #f49b52; background: #643617; }
+.metal-arrows button:disabled { opacity: .3; cursor: default; }
+.metal-arrows button:focus-visible { outline: 2px solid #f49b52; outline-offset: 4px; }
+.metal-counter { position: absolute; right: 125px; bottom: 10px; }
+.metal-signature { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); }
+.metal-scroll[data-reduced="true"] .metal-arrows, .metal-scroll[data-reduced="true"] .metal-scroll-hint { display: none; }
+@media (max-width: 767px) {
+  .metal-arrows { right: 5%; bottom: 72px; }
+  .metal-counter { left: 0; right: auto; bottom: 16px; font-size: 10px; }
+  .metal-scroll-hint { display: flex; position: absolute; left: 0; bottom: 42px; font-size: 9px; }
+  .metal-scroll-hint svg { width: 18px; }
+  .metal-stage[data-step="9"] .metal-scroll-hint { display: none; }
+}

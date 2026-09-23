@@ -1,0 +1,114 @@
+/* Main landing page presentation; Tailwind is loaded by index.css. */
+
+@theme {
+  --color-gmac-navy: #102f46;
+  --color-gmac-blue: #28769e;
+  --color-gmac-cyan: #6bd6e6;
+  --color-gmac-orange: #f47a20;
+  --color-gmac-ink: #0b1826;
+  --color-gmac-steel: #edf5f8;
+}
+
+:root {
+  color: #0b1826;
+  background: #f6fafc;
+  font-family:
+    "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 92px;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #f6fafc;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  color: #ffffff;
+  background: #f47a20;
+}
+
+.industrial-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+}
+
+.fluid-grid {
+  background-image:
+    linear-gradient(rgba(40, 118, 158, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(40, 118, 158, 0.09) 1px, transparent 1px);
+  background-size: 52px 52px;
+  pointer-events: none;
+}
+
+.brand-corners {
+  border-radius: 6px;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+}
+
+.hero-title {
+  text-shadow: 0 18px 48px rgba(3, 14, 24, 0.45);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.ambient-sweep {
+  animation: ambient-sweep 12s ease-in-out infinite;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(107, 214, 230, 0.16) 42%,
+    rgba(244, 122, 32, 0.1) 56%,
+    transparent 74%
+  );
+  pointer-events: none;
+  transform: translateX(-34%) skewX(-7deg);
+}
+
+input:not([type="file"]),
+select,
+textarea {
+  border-radius: 6px;
+}
+
+@keyframes ambient-sweep {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translateX(-34%) skewX(-7deg);
+  }
+
+  50% {
+    opacity: 0.85;
+    transform: translateX(28%) skewX(-7deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}
