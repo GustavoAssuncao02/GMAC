@@ -63,31 +63,9 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
     bendPanels.push(panel)
   }
   const bendEnvironment = pmrem.fromScene(bendRoom, 0.035)
-  const finalRoom = new T.Scene()
-  finalRoom.background = new T.Color(0x080b0f)
-  const finalPanels: T.Mesh[] = []
-  for (const [w, h, x, y, z, color, intensity] of [
-    [8, 6, 5, 5, 4, 0xffc998, 7.5],
-    [2, 7, -5, 1, 2, 0x7fd4ff, 0.45],
-    [2, 6, -5, 1, -3, 0x43c5ff, 4.0],
-    [5, 2, 0, 3, -5, 0x66cbff, 2.2],
-    [7, 5, 0, 7, 0, 0xe2e8eb, 1.0],
-    [3, 6, 4, -3, 4, 0xffbd82, 2.0],
-    [6, 4, 0, -7, 0, 0x8ca8b8, 0.2],
-  ] as const) {
-    const panel = new T.Mesh(
-      new T.PlaneGeometry(w, h),
-      new T.MeshBasicMaterial({ color: new T.Color(color).multiplyScalar(intensity), side: T.DoubleSide }),
-    )
-    panel.position.set(x, y, z)
-    panel.lookAt(0, 0, 0)
-    finalRoom.add(panel)
-    finalPanels.push(panel)
-  }
-  const finalEnvironment = pmrem.fromScene(finalRoom, 0.035)
   scene.environment = environment.texture
   scene.environmentIntensity = 0.82
-  ;[...panels, ...bendPanels, ...finalPanels].forEach(panel => { panel.geometry.dispose(); (panel.material as T.Material).dispose() })
+  ;[...panels, ...bendPanels].forEach(panel => { panel.geometry.dispose(); (panel.material as T.Material).dispose() })
   pmrem.dispose()
   const key = new T.DirectionalLight(0xffddc1, 5.4)
   key.position.set(-4, 7, 6)
@@ -100,6 +78,15 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
   rim.position.set(5, 4, -5)
   const fill = new T.DirectionalLight(0x8fcff2, 0.38)
   fill.position.set(6, 1, 4)
+  const processKeyColor = new T.Color(0xffddc1)
+  const finalKeyColor = new T.Color(0xff9b54)
+  const processRimColor = new T.Color(0x55c7ff)
+  const neutralRimColor = new T.Color(0xe7edf0)
+  const finalRimColor = new T.Color(0x24bdff)
+  const processKeyPosition = new T.Vector3(-4, 7, 6)
+  const finalKeyPosition = new T.Vector3(5, 4.5, 5)
+  const processRimPosition = new T.Vector3(5, 4, -5)
+  const finalRimPosition = new T.Vector3(-5, 4, -5)
   scene.add(key, rim, fill)
   const surface = createSteelTextures(renderer)
   const mandrel = createMandrel(surface)
@@ -182,9 +169,10 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
         Math.abs(step.frame - state.frame) < Math.abs(metalSteps[best].frame - state.frame) ? index : best, 0)
       const step = operation?.step ?? nearestStep
       const phase = operation?.phase ?? 1
-      const finalLighting = step === 9
-      const neutralProcessLighting = step === 2 || step === 3
+      const neutralProcessEnvironment = step >= 2 && step <= 4
+      const processLightingReturn = step === 2 ? 0 : T.MathUtils.smoothstep(state.progress, 18 / 79, 25 / 79)
       const close = T.MathUtils.smoothstep(landingAmount(state.progress), 0, 1)
+      const finalLightingMix = close
       if (camera.fov !== (mobile ? 47 : 38)) { camera.fov = mobile ? 47 : 38; camera.updateProjectionMatrix() }
       const vh = 24 * Math.tan(T.MathUtils.degToRad(camera.fov) / 2)
       const vw = vh * width / height
@@ -192,7 +180,7 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
       // Stable machining view followed by the three-quarter close-up.
       stage.scale.setScalar(mobile ? 0.61 + close * 0.17 : (width < 1200 ? 0.85 : 0.97) + close * 0.18)
       mandrel.root.rotation.set(-0.78 - close * 0.08, 0.06 + close * 0.1, -0.12 - close * 0.08)
-      const { contact, diagnostics, effect, polishPosition, polishing } = mandrel.update(step, phase)
+      const { contact, diagnostics, effect, polishPosition, polishing } = mandrel.update(step, phase, finalLightingMix)
       stage.updateMatrixWorld(true)
       bounds.makeEmpty()
       // Tool geometry is excluded from the contact shadow's bounds.
@@ -270,20 +258,22 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
         canvas.dataset.qualityChecked = String(step === 8 ? qualityChecks.filter((_, i) => qualityCheckProgress(phase, i) === 1).length : 0)
         canvas.dataset.programs = String(renderer.info.programs?.length ?? 0)
         canvas.dataset.lightingRig = 'fixed-side-key-rim'
+        canvas.dataset.finalLightingMix = finalLightingMix.toFixed(4)
+        canvas.dataset.processLightingReturn = processLightingReturn.toFixed(4)
       }
       // The presentation frame gets its own brighter product-lighting pass:
       // a warm lateral key, a cool rear rim, and a restrained front return.
       // Steps 01-08 keep the process lighting unchanged.
-      key.intensity = finalLighting ? 8.2 : 5.4
-      rim.intensity = finalLighting ? 5.2 : 3.1
-      fill.intensity = finalLighting ? 0.72 : 0.38
-      key.color.setHex(finalLighting ? 0xff9b54 : 0xffddc1)
-      rim.color.setHex(finalLighting ? 0x24bdff : neutralProcessLighting ? 0xe7edf0 : 0x55c7ff)
-      key.position.set(finalLighting ? 5 : -4, finalLighting ? 4.5 : 7, finalLighting ? 5 : 6)
-      rim.position.set(finalLighting ? -5 : 5, 4, -5)
-      scene.environment = finalLighting ? finalEnvironment.texture : neutralProcessLighting ? bendEnvironment.texture : environment.texture
-      scene.environmentIntensity = finalLighting ? 1.0 : 0.82
-      renderer.toneMappingExposure = finalLighting ? 1.3 : 1.16
+      key.intensity = T.MathUtils.lerp(5.4, 8.2, finalLightingMix)
+      rim.intensity = T.MathUtils.lerp(3.1, 5.2, finalLightingMix)
+      fill.intensity = T.MathUtils.lerp(0.38, 0.72, finalLightingMix)
+      key.color.copy(processKeyColor).lerp(finalKeyColor, finalLightingMix)
+      rim.color.copy(neutralRimColor).lerp(processRimColor, processLightingReturn).lerp(finalRimColor, finalLightingMix)
+      key.position.lerpVectors(processKeyPosition, finalKeyPosition, finalLightingMix)
+      rim.position.lerpVectors(processRimPosition, finalRimPosition, finalLightingMix)
+      scene.environment = neutralProcessEnvironment ? bendEnvironment.texture : environment.texture
+      scene.environmentIntensity = T.MathUtils.lerp(0.82, 1.05, finalLightingMix)
+      renderer.toneMappingExposure = T.MathUtils.lerp(1.16, 1.3, finalLightingMix)
       renderer.setClearColor(0x080b0e, 0)
       renderer.render(scene, camera)
       if (import.meta.env.DEV) {
@@ -303,7 +293,7 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
       })
       geometries.forEach(geometry => geometry.dispose())
       materials.forEach(material => material.dispose())
-      mandrel.dispose(); weldingEffects.dispose(); surface.dispose(); glowTexture.dispose(); environment.dispose(); bendEnvironment.dispose(); finalEnvironment.dispose(); shadow.texture.dispose()
+      mandrel.dispose(); weldingEffects.dispose(); surface.dispose(); glowTexture.dispose(); environment.dispose(); bendEnvironment.dispose(); shadow.texture.dispose()
       renderer.dispose()
     },
   }

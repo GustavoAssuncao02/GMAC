@@ -388,7 +388,7 @@ export function createMandrel(surface: ReturnType<typeof createSteelTextures>) {
       pointAlong(pass === 0 ? progress / 0.46 : (progress - 0.54) / 0.46, weldPaths[pass], target)
       return true
     },
-    update(step: number, phase: number) {
+    update(step: number, phase: number, presentationLighting = 0) {
       const cutting = step === 2, bending = step === 3, welding = step === 4, machining = step === 5, finishing = step === 6, assembling = step === 7
       const reveal = cutting ? smooth(phase, 0.005, 0.1) : step >= 2 ? 1 : 0
       blank.visible = reveal < 1
@@ -517,11 +517,11 @@ export function createMandrel(surface: ReturnType<typeof createSteelTextures>) {
       finishUniform.value = finish
       finishMaterials.forEach(material => {
         material.color.copy(roughColor).lerp(finalColor, finish)
-        material.roughness = step === 9 ? 0.38 : mix(0.7, 0.48, finish)
-        material.metalness = step === 9 ? 0.86 : mix(0.94, 0.98, finish)
+        material.roughness = mix(mix(0.7, 0.48, finish), 0.38, presentationLighting)
+        material.metalness = mix(mix(0.94, 0.98, finish), 0.86, presentationLighting)
         material.bumpScale = mix(0.023, 0, finish)
         material.normalScale.setScalar(finish * 0.08)
-        material.envMapIntensity = step === 9 ? 1.2 : mix(0.95, 1.05, finish)
+        material.envMapIntensity = mix(mix(0.95, 1.05, finish), 1.2, presentationLighting)
       })
       diagnostics = { holes, bolts, separation: separated * 0.36, bendError: bendError * 11, finish, cut, weld, boltGap, pressGap }
       const cutActive = laser.visible && phase >= 0.06
