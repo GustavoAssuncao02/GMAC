@@ -249,7 +249,7 @@ function TrustBand() {
   return (
     <section className="d2-trust" aria-label="Diferenciais">
       <div className="d2-shell d2-trust__grid">
-        <div className="d2-trust__item"><Timer /><strong><b>16</b> anos de experiência</strong><span>Tradição e confiança no setor industrial.</span></div>
+        <div className="d2-trust__item"><Timer /><strong><b>18</b> anos de experiência</strong><span>Tradição e confiança no setor industrial.</span></div>
         <div className="d2-trust__item"><Ruler /><strong>Engenharia<br />sob medida</strong><span>Soluções desenvolvidas para a sua necessidade.</span></div>
         <div className="d2-trust__item"><Wrench /><strong>Atendimento<br />industrial</strong><span>Parceria do projeto à operação.</span></div>
         <div className="d2-trust__aside">Precisão<br />produção<br />confiança</div>
@@ -264,7 +264,7 @@ function AboutDesign2() {
       <div className="d2-shell d2-about__grid">
         <Reveal><SectionIntro eyebrow="A GMAC" title="Engenharia, experiência e precisão."><>A GMAC Metalúrgica atua com soluções industriais, unindo experiência técnica, capacidade produtiva e compromisso com a execução dos serviços.</></SectionIntro>
           <div className="d2-metrics">
-            <div><strong>16<span>+</span></strong><small>Anos de experiência</small></div>
+            <div><strong>18<span>+</span></strong><small>Anos de experiência</small></div>
             <div><strong>Precisão</strong><small>Em cada etapa</small></div>
             <div><strong>Soluções</strong><small>Industriais sob medida</small></div>
           </div>
@@ -283,7 +283,7 @@ function ClientStrip() {
   const repeated = [...clients, ...clients]
   return (
     <section id="clientes" className="d2-clients">
-      <div className="d2-shell d2-clients__head"><SectionIntro eyebrow="Trajetória" title="Marcas presentes na trajetória da GMAC."><>Algumas das marcas atendidas pela GMAC Metalúrgica em demandas industriais.</></SectionIntro><span className="d2-client-count">05 / clientes</span></div>
+      <div className="d2-shell d2-clients__head"><SectionIntro eyebrow="Trajetória" title="Marcas presentes na trajetória da GMAC."><>Algumas das marcas atendidas pela GMAC Metalúrgica em demandas industriais.</></SectionIntro><span className="d2-client-count"></span></div>
       <div className="d2-client-window"><motion.div className="d2-client-track" animate={{ x: ['0%', '-50%'] }} transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}>{repeated.map(([src, alt], index) => <div className="d2-client-logo" key={`${alt}-${index}`}><img src={assetUrl(src)} alt={alt} /></div>)}</motion.div></div>
     </section>
   )

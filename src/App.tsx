@@ -697,7 +697,7 @@ function Hero() {
             className="mt-8 grid max-w-3xl gap-3 sm:mt-12 sm:grid-cols-[0.8fr_1.2fr]"
           >
             <div className="border-l-4 border-gmac-orange bg-white/8 px-5 py-4 backdrop-blur">
-              <p className="text-3xl font-black leading-none text-white">16</p>
+              <p className="text-3xl font-black leading-none text-white">18</p>
               <p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-white/70">
                 Anos de experiência
               </p>
