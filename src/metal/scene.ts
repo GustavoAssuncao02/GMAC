@@ -20,31 +20,86 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
   const samples = gl.getParameter(gl.SAMPLES) as number
   const pmrem = new T.PMREMGenerator(renderer)
   const room = new T.Scene()
-  room.background = new T.Color(0x48505a)
+  room.background = new T.Color(0x080b0f)
   const panels: T.Mesh[] = []
-  for (const [w, h, x, y, z, intensity] of [[6, 4, -3, 5, 4, 3.5], [2, 7, 5, 1, 2, 2.5], [1.5, 5, -5, 0, -2, 2], [5, 2, 0, 3, -5, 3], [7, 5, 0, 7, 0, 2.8], [3, 6, -2, -4, 4, 2.3], [6, 4, 0, -7, 0, 1.1]]) {
-    const panel = new T.Mesh(new T.PlaneGeometry(w, h), new T.MeshBasicMaterial({ color: new T.Color(intensity, intensity, intensity), side: T.DoubleSide }))
+  // An asymmetric studio environment: a broad warm key from camera-right,
+  // a narrow cool strip behind camera-left, and only a faint overhead return.
+  for (const [w, h, x, y, z, color, intensity] of [
+    [7, 5, -3, 5, 4, 0xffdfc3, 5.6],
+    [2, 7, 5, 1, 2, 0xa3c8dc, 0.4],
+    [1.5, 5, -5, 0, -2, 0x5bcaff, 2.7],
+    [5, 2, 0, 3, -5, 0x69cfff, 3.2],
+    [7, 5, 0, 7, 0, 0xd9e2e7, 0.8],
+    [3, 6, -2, -4, 4, 0xffd3ad, 1.35],
+    [6, 4, 0, -7, 0, 0x9bb8c8, 0.25],
+  ] as const) {
+    const base = new T.Color(color).multiplyScalar(intensity)
+    const panel = new T.Mesh(new T.PlaneGeometry(w, h), new T.MeshBasicMaterial({ color: base, side: T.DoubleSide }))
     panel.position.set(x, y, z)
     panel.lookAt(0, 0, 0)
     room.add(panel)
     panels.push(panel)
   }
   const environment = pmrem.fromScene(room, 0.035)
+  const bendRoom = new T.Scene()
+  bendRoom.background = new T.Color(0x080b0f)
+  const bendPanels: T.Mesh[] = []
+  for (const [w, h, x, y, z, color, intensity] of [
+    [7, 5, -3, 5, 4, 0xfff3e8, 5.6],
+    [2, 7, 5, 1, 2, 0xe6ebee, 0.4],
+    [1.5, 5, -5, 0, -2, 0xe2e7ea, 2.7],
+    [5, 2, 0, 3, -5, 0xe3e8eb, 3.2],
+    [7, 5, 0, 7, 0, 0xd9e2e7, 0.8],
+    [3, 6, -2, -4, 4, 0xffeee0, 1.35],
+    [6, 4, 0, -7, 0, 0xdce3e7, 0.25],
+  ] as const) {
+    const panel = new T.Mesh(
+      new T.PlaneGeometry(w, h),
+      new T.MeshBasicMaterial({ color: new T.Color(color).multiplyScalar(intensity), side: T.DoubleSide }),
+    )
+    panel.position.set(x, y, z)
+    panel.lookAt(0, 0, 0)
+    bendRoom.add(panel)
+    bendPanels.push(panel)
+  }
+  const bendEnvironment = pmrem.fromScene(bendRoom, 0.035)
+  const finalRoom = new T.Scene()
+  finalRoom.background = new T.Color(0x080b0f)
+  const finalPanels: T.Mesh[] = []
+  for (const [w, h, x, y, z, color, intensity] of [
+    [8, 6, 5, 5, 4, 0xffc998, 7.5],
+    [2, 7, -5, 1, 2, 0x7fd4ff, 0.45],
+    [2, 6, -5, 1, -3, 0x43c5ff, 4.0],
+    [5, 2, 0, 3, -5, 0x66cbff, 2.2],
+    [7, 5, 0, 7, 0, 0xe2e8eb, 1.0],
+    [3, 6, 4, -3, 4, 0xffbd82, 2.0],
+    [6, 4, 0, -7, 0, 0x8ca8b8, 0.2],
+  ] as const) {
+    const panel = new T.Mesh(
+      new T.PlaneGeometry(w, h),
+      new T.MeshBasicMaterial({ color: new T.Color(color).multiplyScalar(intensity), side: T.DoubleSide }),
+    )
+    panel.position.set(x, y, z)
+    panel.lookAt(0, 0, 0)
+    finalRoom.add(panel)
+    finalPanels.push(panel)
+  }
+  const finalEnvironment = pmrem.fromScene(finalRoom, 0.035)
   scene.environment = environment.texture
-  scene.environmentIntensity = 0.85
-  panels.forEach(panel => { panel.geometry.dispose(); (panel.material as T.Material).dispose() })
+  scene.environmentIntensity = 0.82
+  ;[...panels, ...bendPanels, ...finalPanels].forEach(panel => { panel.geometry.dispose(); (panel.material as T.Material).dispose() })
   pmrem.dispose()
-  const key = new T.DirectionalLight(0xf0f4f8, 3)
-  key.position.set(-3, 7, 7)
+  const key = new T.DirectionalLight(0xffddc1, 5.4)
+  key.position.set(-4, 7, 6)
   key.castShadow = false
   key.shadow.mapSize.set(1024, 1024)
   key.shadow.camera.left = key.shadow.camera.bottom = -8
   key.shadow.camera.right = key.shadow.camera.top = 8
   key.shadow.bias = -0.001
-  const rim = new T.DirectionalLight(0xffc49c, 1.2)
-  rim.position.set(5, 3, -2)
-  const fill = new T.DirectionalLight(0xd6e9f8, 1.7)
-  fill.position.set(-5, 0, 4)
+  const rim = new T.DirectionalLight(0x55c7ff, 3.1)
+  rim.position.set(5, 4, -5)
+  const fill = new T.DirectionalLight(0x8fcff2, 0.38)
+  fill.position.set(6, 1, 4)
   scene.add(key, rim, fill)
   const surface = createSteelTextures(renderer)
   const mandrel = createMandrel(surface)
@@ -127,6 +182,8 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
         Math.abs(step.frame - state.frame) < Math.abs(metalSteps[best].frame - state.frame) ? index : best, 0)
       const step = operation?.step ?? nearestStep
       const phase = operation?.phase ?? 1
+      const finalLighting = step === 9
+      const neutralProcessLighting = step === 2 || step === 3
       const close = T.MathUtils.smoothstep(landingAmount(state.progress), 0, 1)
       if (camera.fov !== (mobile ? 47 : 38)) { camera.fov = mobile ? 47 : 38; camera.updateProjectionMatrix() }
       const vh = 24 * Math.tan(T.MathUtils.degToRad(camera.fov) / 2)
@@ -212,8 +269,21 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
         canvas.dataset.polishPosition = polishPosition.toArray().map(value => value.toFixed(3)).join(',')
         canvas.dataset.qualityChecked = String(step === 8 ? qualityChecks.filter((_, i) => qualityCheckProgress(phase, i) === 1).length : 0)
         canvas.dataset.programs = String(renderer.info.programs?.length ?? 0)
+        canvas.dataset.lightingRig = 'fixed-side-key-rim'
       }
-      renderer.toneMappingExposure = 1.06 + weldingVisual.flash
+      // The presentation frame gets its own brighter product-lighting pass:
+      // a warm lateral key, a cool rear rim, and a restrained front return.
+      // Steps 01-08 keep the process lighting unchanged.
+      key.intensity = finalLighting ? 8.2 : 5.4
+      rim.intensity = finalLighting ? 5.2 : 3.1
+      fill.intensity = finalLighting ? 0.72 : 0.38
+      key.color.setHex(finalLighting ? 0xff9b54 : 0xffddc1)
+      rim.color.setHex(finalLighting ? 0x24bdff : neutralProcessLighting ? 0xe7edf0 : 0x55c7ff)
+      key.position.set(finalLighting ? 5 : -4, finalLighting ? 4.5 : 7, finalLighting ? 5 : 6)
+      rim.position.set(finalLighting ? -5 : 5, 4, -5)
+      scene.environment = finalLighting ? finalEnvironment.texture : neutralProcessLighting ? bendEnvironment.texture : environment.texture
+      scene.environmentIntensity = finalLighting ? 1.0 : 0.82
+      renderer.toneMappingExposure = finalLighting ? 1.3 : 1.16
       renderer.setClearColor(0x080b0e, 0)
       renderer.render(scene, camera)
       if (import.meta.env.DEV) {
@@ -233,7 +303,7 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
       })
       geometries.forEach(geometry => geometry.dispose())
       materials.forEach(material => material.dispose())
-      mandrel.dispose(); weldingEffects.dispose(); surface.dispose(); glowTexture.dispose(); environment.dispose(); shadow.texture.dispose()
+      mandrel.dispose(); weldingEffects.dispose(); surface.dispose(); glowTexture.dispose(); environment.dispose(); bendEnvironment.dispose(); finalEnvironment.dispose(); shadow.texture.dispose()
       renderer.dispose()
     },
   }

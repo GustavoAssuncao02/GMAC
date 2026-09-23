@@ -125,7 +125,7 @@ export default function MetalScroll() {
       if (copyChanged) viewport.dataset.step = String(displayStep)
       paintedStep = displayStep
       wasPreview = previewFrames
-      viewport.style.setProperty('--metal-light', String(state.lighting.background_level * 4))
+      viewport.style.setProperty('--metal-light', '.32')
       scene?.render(state, override !== null ? 1 : reduced ? 0 : Math.sin(Math.PI * t),
         override !== null && phaseOverride === null ? undefined : { step: displayStep, phase })
       if (override === null && !reduced && t < 1) schedule()
