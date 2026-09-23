@@ -169,7 +169,7 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
         Math.abs(step.frame - state.frame) < Math.abs(metalSteps[best].frame - state.frame) ? index : best, 0)
       const step = operation?.step ?? nearestStep
       const phase = operation?.phase ?? 1
-      const neutralProcessEnvironment = step >= 2 && step <= 4
+      const neutralProcessEnvironment = step >= 2 && step <= 5
       const processLightingReturn = step === 2 ? 0 : T.MathUtils.smoothstep(state.progress, 18 / 79, 25 / 79)
       const close = T.MathUtils.smoothstep(landingAmount(state.progress), 0, 1)
       const finalLightingMix = close
@@ -260,6 +260,7 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
         canvas.dataset.lightingRig = 'fixed-side-key-rim'
         canvas.dataset.finalLightingMix = finalLightingMix.toFixed(4)
         canvas.dataset.processLightingReturn = processLightingReturn.toFixed(4)
+        canvas.dataset.environmentRig = neutralProcessEnvironment ? 'neutral-process' : 'studio-process'
       }
       // The presentation frame gets its own brighter product-lighting pass:
       // a warm lateral key, a cool rear rim, and a restrained front return.
