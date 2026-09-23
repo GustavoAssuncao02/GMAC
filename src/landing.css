@@ -1,6 +1,6 @@
 /* Main landing page presentation; Tailwind is loaded by index.css. */
 
-@theme {
+:root {
   --color-gmac-navy: #102f46;
   --color-gmac-blue: #28769e;
   --color-gmac-cyan: #6bd6e6;
