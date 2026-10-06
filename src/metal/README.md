@@ -79,9 +79,9 @@ ausência de erros no navegador e capturas a 1440, 1024, 390 e 360 px.
 `verify-finish-quality.mjs` confere o trajeto da politriz, sincronização do checklist
 com a peça, repetição, saída da etapa, repouso e layout em telas menores.
 
-A renderização usa tempo real limitado a 60 fps e MSAA nativo. O brilho da solda
-usa halos suaves pré-calculados no arco e nas faíscas, respeitando a profundidade,
-sem buffers HDR ou passes de desfoque sobre a tela inteira. A sombra de contato
+A renderização usa tempo real na taxa da tela e MSAA nativo. O brilho da solda
+usa bloom HDR seletivo no arco e nas faíscas, respeitando a profundidade,
+ativo só enquanto há metal incandescente. A sombra de contato
 também é pré-calculada. Partes rígidas são agrupadas por material, e o cordão usa
 instâncias da mesma geometria. Textos e navegação são atualizados ao trocar a etapa.
 Não renderiza continuamente em repouso, fora da seção ou em aba oculta.
@@ -95,25 +95,32 @@ da interface durante a primeira transição para o corte.
 
 ## Efeito visual da solda
 
-`weldingEffects.ts` implementa a referência de `prompt_solda_codex.zip` somente
-na camada visual: arco azul/branco, bloom localizado, faíscas alaranjadas,
-brasas, fumaça iluminada e uma breve resposta de exposição/foco na ignição.
-O módulo consulta `sampleWeldContact` para reutilizar as duas curvas existentes.
-Geometria, câmera principal, movimentos e duração da operação permanecem iguais.
+`weldingEffects.ts` cuida da camada visual da solda: arco azul/branco com
+cintilação, poça incandescente, faíscas, respingos, fumaça e um pico de brilho
+na ignição. O módulo consulta `sampleWeldContact` e `weldWindows` (`mandrel.ts`).
 
-Os ajustes ficam em `weldingVisuals`, no início do módulo: intensidade do arco
-e do bloom, quantidade/velocidade/tamanho/vida das partículas, fumaça, flash,
-desfoque e profundidade de campo. Vida e duração usam segundos; desfoque usa
-pixels CSS. A quantidade de faíscas tem capacidade máxima de 160.
+A tocha desce até o primeiro cordão, percorre cada passe em velocidade constante
+(acelera e freia só nas pontas), troca de lado em um arco sobre o colar e sobe
+ao terminar. O cordão cresce continuamente e o metal recém-depositado esfria
+de branco para laranja e vermelho escuro (`hotSeam`).
 
-Partículas são calculadas pelo instante de emissão e pelo tempo da etapa,
-incluindo gravidade e perda de brilho. A reprodução e o retorno entre fases
-são determinísticos. O arco desliga durante a troca de lado; fumaça e partículas
-já emitidas continuam se dissipando. Tudo desaparece no fim ou ao sair da etapa.
-O foco das partículas varia com a distância ao ponto de solda. O desfoque global
-padrão fica limitado a 0,18 px por até 85 ms em cada ignição. Os halos são locais,
-sem pós-processamento HDR contínuo, e as luzes da cena são reutilizadas.
+As faíscas são simuladas a partir do instante de emissão, com gravidade,
+arrasto e quique na chapa e no colar. A cor segue uma rampa de corpo negro e
+perde calor a cada impacto. Elas são desenhadas como cápsulas com motion blur,
+na direção da velocidade em tela. Os respingos grudam na chapa e esfriam.
+A reprodução e o retorno entre fases continuam determinísticos.
 
-`verify-welding-effects.mjs` verifica ignição, recuperação da nitidez, troca de
-passe, resíduos, retorno determinístico, repouso, mobile, reduced motion e FPS
-durante a operação completa, incluindo os dois picos de ignição.
+`bloom.ts` aplica um bloom HDR seletivo. Só os objetos na camada `BLOOM_LAYER`
+(faíscas, arco, cordão quente e faíscas do laser) brilham, e a peça os oculta
+corretamente. O passe roda em meia resolução com uma cadeia de mips e só
+quando há algo incandescente na tela. A fumaça fica na `PLAIN_LAYER`.
+
+Os ajustes ficam em `weldingVisuals`: intensidade do arco e do bloom,
+quantidade, velocidade, largura e vida das faíscas e respingos, gravidade,
+arrasto, obturador (comprimento do rastro), fumaça e profundidade de campo.
+
+A renderização acompanha a taxa de atualização da tela (60/120/144 Hz).
+Laser e tocha entram e saem com movimento, e a broca desliza entre os furos.
+
+`verify-welding-effects.mjs` verifica ignição, bloom, troca de passe, resíduos,
+retorno determinístico, repouso, mobile, reduced motion e FPS durante a operação.

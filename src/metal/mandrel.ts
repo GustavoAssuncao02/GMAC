@@ -2,11 +2,32 @@ import * as T from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { mergeGeometries, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js'
 import type { createSteelTextures } from './steelTextures'
+import { BLOOM_LAYER } from './bloom'
+import { heatColor } from './weldingEffects'
 
 const smooth = T.MathUtils.smoothstep
+const smoother = T.MathUtils.smootherstep
 const mix = T.MathUtils.lerp
 const clamp = (n: number) => T.MathUtils.clamp(n, 0, 1)
 const rad = T.MathUtils.degToRad
+const easeOut = (n: number) => 1 - Math.pow(1 - clamp(n), 3)
+
+// Each weld pass travels at constant speed, easing only where the torch starts and stops.
+export const weldWindows = [[0.28, 0.555], [0.635, 0.91]] as const
+const travelAccel = 0.14
+const travelSpeed = 1 / (1 - travelAccel)
+const travelEase = (n: number) => {
+  const t = clamp(n), a = travelAccel, v = travelSpeed
+  return t < a ? v * t * t / (2 * a) : t > 1 - a ? 1 - v * (1 - t) * (1 - t) / (2 * a) : v * (t - a / 2)
+}
+const travelInverse = (y: number) => {
+  const a = travelAccel, v = travelSpeed, edge = v * a / 2
+  return y < edge ? Math.sqrt(2 * a * y / v) : y > 1 - edge ? 1 - Math.sqrt(2 * a * (1 - y) / v) : y / v + a / 2
+}
+const passAt = (phase: number, pass: number) => {
+  const [start, end] = weldWindows[pass]
+  return travelEase((phase - start) / (end - start))
+}
 
 // One workpiece, shared by all stages. Mounting holes and screws use the same anchors.
 export function createMandrel(surface: ReturnType<typeof createSteelTextures>) {
@@ -283,25 +304,47 @@ export function createMandrel(surface: ReturnType<typeof createSteelTextures>) {
   const weldRadius = 1.4
   const weldAngle = Math.asin(0.63 / weldRadius)
   const weldPaths: T.Vector3[][] = [[], []]
-  const weldBeads: { position: T.Vector3; angle: number; pass: number; progress: number }[] = []
+  const weldBeads: { position: T.Vector3; angle: number; pass: number; progress: number; deposit: number }[] = []
   const beadGeometry = new T.SphereGeometry(0.029, 8, 6)
   const seam = new T.InstancedMesh(beadGeometry, metal, 66)
   seam.frustumCulled = false
   body.add(seam)
+  // Freshly deposited metal glows white-hot and cools through orange to dull red.
+  const hotSeam = new T.InstancedMesh(beadGeometry, new T.MeshBasicMaterial({ transparent: true,
+    blending: T.AdditiveBlending, depthWrite: false, toneMapped: false }), 66)
+  hotSeam.instanceColor = new T.InstancedBufferAttribute(new Float32Array(66 * 3), 3).setUsage(T.DynamicDrawUsage)
+  hotSeam.frustumCulled = false
+  hotSeam.layers.set(BLOOM_LAYER)
+  body.add(hotSeam)
   const beadTransform = new T.Object3D()
-  let seamFinish = -1
+  const beadHeat = new T.Color()
+  let seamState = NaN
   for (const [pass, side] of [-1, 1].entries()) for (let i = 0; i <= 32; i++) {
     const angle = mix(-weldAngle, weldAngle, i / 32)
     const p = new T.Vector3(side * Math.cos(angle) * weldRadius, Math.sin(angle) * weldRadius, 0.307)
     weldPaths[pass].push(p)
     const angleOnRing = Math.atan2(p.y, p.x)
-    beadTransform.position.copy(p)
-    beadTransform.rotation.z = angleOnRing
-    beadTransform.scale.set(0.8, 1.25, 0.55)
-    beadTransform.updateMatrix()
-    seam.setMatrixAt(weldBeads.length, beadTransform.matrix)
-    weldBeads.push({ position: p, angle: angleOnRing, pass, progress: i / 32 })
+    const [start, end] = weldWindows[pass]
+    weldBeads.push({ position: p, angle: angleOnRing, pass, progress: i / 32, deposit: start + (end - start) * travelInverse(i / 32) })
   }
+  const placeBead = (index: number, grow: number, finish: number) => {
+    const { position, angle } = weldBeads[index]
+    beadTransform.position.copy(position)
+    beadTransform.rotation.z = angle
+    beadTransform.scale.set(0.8, 1.25, 0.55 - finish * 0.4).multiplyScalar(grow)
+    beadTransform.updateMatrix()
+    seam.setMatrixAt(index, beadTransform.matrix)
+    beadTransform.scale.multiplyScalar(1.1)
+    beadTransform.updateMatrix()
+    hotSeam.setMatrixAt(index, beadTransform.matrix)
+  }
+  const relocationStart = new T.Vector3(), relocationEnd = new T.Vector3()
+  const relocationLiftA = new T.Vector3(), relocationLiftB = new T.Vector3()
+  const relocation = new T.CubicBezierCurve3(relocationStart, relocationLiftA, relocationLiftB, relocationEnd)
+  // Between passes the torch lifts in a smooth arc over the collar instead of a straight cut.
+  relocationStart.copy(weldPaths[0][32]); relocationEnd.copy(weldPaths[1][0])
+  relocationLiftA.copy(relocationStart).setZ(relocationStart.z + 1.25)
+  relocationLiftB.copy(relocationEnd).setZ(relocationEnd.z + 1.25)
   const torchAxis = new T.Vector3(0, 0, 1)
   const torchDirection = new T.Vector3()
   const torch = new T.Group()
@@ -381,11 +424,9 @@ export function createMandrel(surface: ReturnType<typeof createSteelTextures>) {
     body,
     // Read-only sampling for visual trails; uses the exact existing curved tool path.
     sampleWeldContact(phase: number, target: T.Vector3) {
-      if (phase <= 0.28 || phase >= 0.91) return false
-      const progress = smooth(phase, 0.28, 0.91)
-      if (progress > 0.46 && progress < 0.54) return false
-      const pass = progress <= 0.46 ? 0 : 1
-      pointAlong(pass === 0 ? progress / 0.46 : (progress - 0.54) / 0.46, weldPaths[pass], target)
+      const pass = weldWindows.findIndex(([start, end]) => phase > start && phase < end)
+      if (pass < 0) return false
+      pointAlong(passAt(phase, pass), weldPaths[pass], target)
       return true
     },
     update(step: number, phase: number, presentationLighting = 0) {
@@ -419,10 +460,11 @@ export function createMandrel(surface: ReturnType<typeof createSteelTextures>) {
       const cutSegments = Math.floor(cut * (pathPoints.length - 1))
       traceGeometry.setDrawRange(0, (cutSegments - pathBreaks.filter(index => index <= cutSegments).length) * 2)
       trace.material.opacity = 1 - smooth(phase, 0.8, 0.96)
-      laser.visible = cutting && phase < 0.83
+      laser.visible = cutting && phase < 0.9
       pointAlong(cut, pathPoints, contact)
       laser.position.copy(contact)
-      laser.position.z += (1 - smooth(phase, 0, 0.06)) * 0.85
+      // Lowers onto the sheet, then lifts away once the contour closes.
+      laser.position.z += (1 - smooth(phase, 0, 0.06)) * 0.85 + Math.pow(clamp((phase - 0.8) / 0.1), 2) * 1.6
       const pressGap = bending ? (1 - smooth(phase, 0.04, 0.28)) * 0.85 + smooth(phase, 0.82, 1) * 0.85 : 0.85
       presses.forEach(({ upper, lower }, i) => {
         const { group, side } = ears[i]
@@ -436,39 +478,44 @@ export function createMandrel(surface: ReturnType<typeof createSteelTextures>) {
         lower.position.copy(pressPoint); lower.position.z -= pressGap * 0.4
         lower.rotation.copy(group.rotation)
       })
-      const weld = welding ? smooth(phase, 0.28, 0.91) : step > 4 ? 1 : 0
-      const weldPass = weld <= 0.46 ? 0 : 1
-      const relocating = weld > 0.46 && weld < 0.54
-      const passProgress = [clamp(weld / 0.46), clamp((weld - 0.54) / 0.46)]
+      const passProgress = welding ? [passAt(phase, 0), passAt(phase, 1)] : step > 4 ? [1, 1] : [0, 0]
+      const relocating = welding && phase > weldWindows[0][1] && phase < weldWindows[1][0]
+      const weldPass = phase <= weldWindows[0][1] ? 0 : 1
+      const weld = !welding ? passProgress[1] : weldPass === 0 ? passProgress[0] * 0.46
+        : relocating ? 0.46 + 0.08 * (phase - weldWindows[0][1]) / (weldWindows[1][0] - weldWindows[0][1]) : 0.54 + passProgress[1] * 0.46
       seam.visible = step >= 4
-      seam.count = weldBeads.filter(({ pass, progress }) => passProgress[pass] > 0 && progress <= passProgress[pass]).length
-      if (finish !== seamFinish) {
-        weldBeads.forEach(({ position, angle }, index) => {
-          beadTransform.position.copy(position)
-          beadTransform.rotation.z = angle
-          beadTransform.scale.set(0.8, 1.25, 0.55 - finish * 0.4)
-          beadTransform.updateMatrix()
-          seam.setMatrixAt(index, beadTransform.matrix)
+      hotSeam.visible = welding
+      const seamKey = welding ? -1 - phase : finish
+      if (seamKey !== seamState) {
+        let count = 0
+        weldBeads.forEach(({ pass, progress, deposit }, index) => {
+          // The bead ahead of the torch grows in, so the seam advances without popping.
+          const grow = clamp((passProgress[pass] - progress) * 32 + 1)
+          if (grow <= 0 || passProgress[pass] <= 0) return
+          placeBead(index, grow, finish)
+          count = index + 1
+          if (welding) hotSeam.setColorAt(index, heatColor(Math.exp(-Math.max(0, phase - deposit) * 3.4 / 0.55), beadHeat).multiplyScalar(0.75))
         })
-        seam.instanceMatrix.needsUpdate = true
-        seamFinish = finish
+        seam.count = hotSeam.count = count
+        seam.instanceMatrix.needsUpdate = hotSeam.instanceMatrix.needsUpdate = true
+        if (hotSeam.instanceColor) hotSeam.instanceColor.needsUpdate = true
+        seamState = seamKey
       }
-      torch.visible = welding && phase > 0.28 && phase < 0.94
+      torch.visible = welding && phase > 0.13 && phase < 0.99
       if (welding) {
         if (relocating) {
-          const travel = (weld - 0.46) / 0.08
-          // Retract, cross above the collar, then approach the other seam without welding in midair.
-          contact.lerpVectors(weldPaths[0][32], weldPaths[1][0], smooth(travel, 0.25, 0.75))
-          contact.z += (smooth(travel, 0, 0.25) - smooth(travel, 0.75, 1)) * 1.05
+          // Lift, cross above the collar in a single arc, then settle onto the other seam.
+          relocation.getPoint(smoother((phase - weldWindows[0][1]) / (weldWindows[1][0] - weldWindows[0][1]), 0, 1), contact)
         } else {
           pointAlong(passProgress[weldPass], weldPaths[weldPass], contact)
         }
         torch.position.copy(contact)
+        torch.position.z += 3.4 * Math.pow(1 - easeOut((phase - 0.13) / 0.15), 2) + 3.4 * Math.pow(clamp((phase - 0.915) / 0.075), 2)
         torchDirection.set(contact.x / weldRadius * 0.4, contact.y / weldRadius * 0.4, 1).normalize()
         torch.quaternion.setFromUnitVectors(torchAxis, torchDirection)
       }
 
-      const drilling = clamp((phase - 0.08) / 0.84) * mounts.length
+      const drilling = clamp((phase - 0.06) / 0.88) * mounts.length
       const drillingIndex = Math.min(mounts.length - 1, Math.floor(drilling))
       const drillingPhase = drilling - drillingIndex
       let holes = 0, bolts = 0, boltGap = 0
@@ -483,12 +530,17 @@ export function createMandrel(surface: ReturnType<typeof createSteelTextures>) {
         const mask = Number(drilledHoles[index * 2]) + Number(drilledHoles[index * 2 + 1]) * 2
         ear.geometry = earGeometries[index][mask]
       })
-      drill.visible = machining && phase > 0.08 && phase < 0.97
+      drill.visible = machining && phase > 0.04 && phase < 0.985
       if (machining) {
-        contact.copy(mounts[drillingIndex])
+        // Glide from the previous hole with a small hop instead of jumping between positions.
+        const from = mounts[Math.max(0, drillingIndex - 1)], to = mounts[drillingIndex]
+        const move = smoother(drillingPhase, 0, 0.3)
+        contact.lerpVectors(from, to, move)
         drill.position.copy(contact)
-        const plunge = smooth(drillingPhase, 0.15, 0.58) - smooth(drillingPhase, 0.67, 0.98)
-        drill.position.z += 0.6 - plunge * 0.76
+        const plunge = smooth(drillingPhase, 0.32, 0.62) - smooth(drillingPhase, 0.7, 0.97)
+        const hop = Math.sin(Math.PI * move) * Math.min(0.45, from.distanceTo(to) * 0.12)
+        const entry = 1.4 * Math.pow(1 - easeOut((phase - 0.04) / 0.1), 2), exit = 1.4 * Math.pow(clamp((phase - 0.93) / 0.055), 2)
+        drill.position.z += 0.6 - plunge * 0.76 + hop + entry + exit
         drill.rotation.z = phase * Math.PI * 80
       }
       polisher.visible = finishing && phase < 0.995
@@ -524,12 +576,12 @@ export function createMandrel(surface: ReturnType<typeof createSteelTextures>) {
         material.envMapIntensity = mix(mix(0.95, 1.05, finish), 1.2, presentationLighting)
       })
       diagnostics = { holes, bolts, separation: separated * 0.36, bendError: bendError * 11, finish, cut, weld, boltGap, pressGap }
-      const cutActive = laser.visible && phase >= 0.06
-      const weldActive = torch.visible && !relocating && weld < 1
-      const drillActive = drill.visible && drillingPhase > 0.3 && drillingPhase < 0.72
+      const cutActive = laser.visible && phase >= 0.06 && phase < 0.795
+      const weldActive = welding && weldWindows.some(([start, end]) => phase > start && phase < end)
+      const drillActive = drill.visible && drillingPhase > 0.42 && drillingPhase < 0.72
       return { contact, diagnostics, polishPosition: polisher.position, polishing: polisher.visible,
         effect: cutActive ? 'cut' : weldActive ? 'weld' : drillActive ? 'drill' : 'none' }
     },
-    dispose() { seam.dispose(); earGeometries.flat().forEach(geometry => geometry.dispose()) },
+    dispose() { seam.dispose(); hotSeam.dispose(); earGeometries.flat().forEach(geometry => geometry.dispose()) },
   }
 }

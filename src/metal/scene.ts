@@ -3,7 +3,8 @@ import { landingAmount, type MetalState } from './timeline'
 import { metalSteps } from './steps'
 import { createSteelTextures } from './steelTextures'
 import { createContactShadow } from './contactShadow'
-import { createMandrel } from './mandrel'
+import { createMandrel, weldWindows } from './mandrel'
+import { createBloom, BLOOM_LAYER, PLAIN_LAYER } from './bloom'
 import { createWeldingEffects, weldingVisuals } from './weldingEffects'
 import { qualityChecks, qualityCheckProgress } from './quality'
 
@@ -15,6 +16,10 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
   const scene = new T.Scene()
   const camera = new T.PerspectiveCamera(38, 1, 0.1, 100)
   camera.position.set(0, 0, 12)
+  camera.layers.enable(BLOOM_LAYER)
+  camera.layers.enable(PLAIN_LAYER)
+  const bloom = createBloom(renderer)
+  const bufferSize = new T.Vector2()
   // Native MSAA keeps full-resolution edges without full-screen HDR render targets.
   const gl = renderer.getContext()
   const samples = gl.getParameter(gl.SAMPLES) as number
@@ -108,6 +113,7 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
   const sparkMaterial = new T.LineBasicMaterial({ color: new T.Color(4, 1.8, 0.55), transparent: true,
     toneMapped: false, blending: T.AdditiveBlending, depthWrite: false })
   const sparks = new T.LineSegments(sparkGeometry, sparkMaterial)
+  sparks.layers.set(BLOOM_LAYER)
   mandrel.root.add(sparks)
   const glowCanvas = document.createElement('canvas')
   glowCanvas.width = glowCanvas.height = 128
@@ -122,8 +128,9 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
   const glowTexture = new T.CanvasTexture(glowCanvas)
   const glow = new T.Sprite(new T.SpriteMaterial({ map: glowTexture, transparent: true,
     blending: T.AdditiveBlending, depthWrite: false, toneMapped: false }))
+  glow.layers.set(BLOOM_LAYER)
   mandrel.root.add(glow)
-  const weldingEffects = createWeldingEffects(mandrel.sampleWeldContact)
+  const weldingEffects = createWeldingEffects(mandrel.sampleWeldContact, weldWindows)
   mandrel.root.add(weldingEffects.root)
 
   const arc = new T.PointLight(0xffa451, 0, 5, 2)
@@ -144,6 +151,8 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
       await renderer.compileAsync(scene, camera)
       if (disposed) return
       renderer.render(scene, camera)
+      // Also compiles the emitters' render-target variants, so the first spark never stalls.
+      bloom.render(scene, camera, 1)
       await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
       if (disposed) return
       visible.forEach((value, object) => { object.visible = value })
@@ -161,6 +170,8 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
       canvas.dataset.msaaSamples = String(samples)
       camera.aspect = w / h
       camera.updateProjectionMatrix()
+      renderer.getDrawingBufferSize(bufferSize)
+      bloom.setSize(bufferSize.x, bufferSize.y)
     },
     render(state: MetalState, _activity = 1, operation?: { step: number; phase: number }) {
       if (!ready || disposed) return
@@ -204,7 +215,7 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
       }
       canvas.dataset.landing = close.toFixed(4)
       const cutting = effect === 'cut', welding = effect === 'weld', drilling = effect === 'drill'
-      const weldingVisual = weldingEffects.update(step, phase, welding, contact, mandrel.root, camera, canvas.height)
+      const weldingVisual = weldingEffects.update(step, phase, welding, contact, mandrel.root, camera, renderer)
       const flare = welding ? weldingVisual.intensity : cutting ? 0.18 : drilling ? 0.07 : 0
       const intensity = cutting ? 0.22 : drilling ? 0.09 : 0
       for (let i = 0; intensity > 0 && i < 72; i++) {
@@ -229,8 +240,6 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
       arc.position.copy(glow.position)
       arc.color.set(welding ? 0xb8e7ff : 0xffac58)
       arc.intensity = welding ? weldingVisual.intensity * weldingVisuals.arcIntensity : flare * 4
-      // A tiny optical response only at ignition; the resting image stays fully sharp.
-      canvas.style.filter = weldingVisual.blur > 0.025 ? `blur(${weldingVisual.blur.toFixed(3)}px)` : 'none'
       // Reuse the secondary light for warm molten-metal reflections while welding.
       polishLight.color.set(step === 4 ? 0xff9238 : 0xe3f0ff)
       polishLight.intensity = step === 4 ? weldingVisual.warmIntensity : polishing ? 0.55 * T.MathUtils.smoothstep(phase, 0, 0.16) : 0
@@ -241,7 +250,7 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
         canvas.dataset.weldSparks = String(weldingVisual.sparks)
         canvas.dataset.weldSmoke = String(weldingVisual.smoke)
         canvas.dataset.weldFlash = weldingVisual.flash.toFixed(4)
-        canvas.dataset.weldBlur = weldingVisual.blur.toFixed(4)
+        canvas.dataset.weldBloom = weldingVisual.bloom.toFixed(3)
         canvas.dataset.operation = ['raw', 'raw', 'cut', 'bend', 'weld', 'machining', 'finish', 'assembly', 'quality', 'final'][step]
         canvas.dataset.operationPhase = phase.toFixed(4)
         canvas.dataset.holeCount = String(diagnostics.holes)
@@ -278,6 +287,8 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
       renderer.toneMappingExposure = T.MathUtils.lerp(1.16, 1.3, finalLightingMix)
       renderer.setClearColor(0x080b0e, 0)
       renderer.render(scene, camera)
+      // Bloom only runs while something is incandescent.
+      bloom.render(scene, camera, welding || weldingVisual.bloom > 0 ? weldingVisual.bloom : cutting ? 0.9 : drilling ? 0.5 : 0)
       if (import.meta.env.DEV) {
         canvas.dataset.renderCount = String(++renderCount)
         canvas.dataset.drawCalls = String(renderer.info.render.calls)
@@ -295,7 +306,7 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
       })
       geometries.forEach(geometry => geometry.dispose())
       materials.forEach(material => material.dispose())
-      mandrel.dispose(); weldingEffects.dispose(); surface.dispose(); glowTexture.dispose(); environment.dispose(); bendEnvironment.dispose(); shadow.texture.dispose()
+      mandrel.dispose(); weldingEffects.dispose(); bloom.dispose(); surface.dispose(); glowTexture.dispose(); environment.dispose(); bendEnvironment.dispose(); shadow.texture.dispose()
       renderer.dispose()
     },
   }

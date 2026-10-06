@@ -63,8 +63,9 @@ export default function MetalScroll() {
     let raf = 0
     let active = false
     let paintedStep = -1, wasPreview = false
-    let nextPaint = 0
-    const frameInterval = 1000 / 60
+    let lastPaint = 0
+    // Follow the display refresh (60/120/144 Hz); only very fast panels are halved.
+    const minFrameGap = 1000 / 200
     let pointer: { id: number; x: number; y: number } | null = null
     let loading = false
     let stepIndex = 0
@@ -133,9 +134,8 @@ export default function MetalScroll() {
     function tick(now: number) {
       raf = 0
       if (disposed || document.hidden || (!active && override === null)) return
-      if (now + 0.5 < nextPaint) { schedule(); return }
-      // Keep time-based motion at 60 fps, without accumulating timer drift.
-      nextPaint = now + frameInterval - Math.max(0, now - nextPaint) % frameInterval
+      if (now - lastPaint < minFrameGap) { schedule(); return }
+      lastPaint = now
       paint()
     }
     function schedule() {
