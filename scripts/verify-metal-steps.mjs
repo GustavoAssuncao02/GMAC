@@ -1,0 +1,87 @@
+import { pathToFileURL } from 'node:url'
+import { mkdirSync } from 'node:fs'
+import assert from 'node:assert/strict'
+const { chromium } = await import(pathToFileURL(process.argv[2]).href)
+const browser = await chromium.launch({ channel: 'msedge', headless: true })
+try {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } })
+  const errors = []
+  page.on('pageerror', e => errors.push(e.message))
+  await page.goto('http://127.0.0.1:5173/', { waitUntil: 'networkidle' })
+  await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, document.querySelector('#transformacao').offsetTop) })
+  await page.waitForSelector('.metal-stage[data-ready="true"]', { timeout: 30000 })
+  await page.waitForTimeout(700)
+  mkdirSync('artifacts/metal-steps', { recursive: true })
+  const buttons = page.locator('.metal-step-nav button')
+  const settled = () => page.waitForFunction(() => document.querySelector('.metal-canvas').dataset.operationPhase === '1.0000')
+  assert.equal(await buttons.count(), 10)
+  await page.mouse.move(800, 500)
+  await page.mouse.wheel(0, 100)
+  await page.waitForTimeout(100)
+  await settled()
+  assert.equal(await page.locator('.metal-stage').getAttribute('data-step'), '1', 'one gesture advances exactly one stage')
+  await page.mouse.wheel(0, 100)
+  await page.waitForTimeout(100)
+  await settled()
+  assert.equal(await page.locator('.metal-stage').getAttribute('data-step'), '2')
+  await page.mouse.wheel(0, -100)
+  await page.waitForTimeout(750)
+  assert.equal(await page.locator('.metal-stage').getAttribute('data-step'), '1', 'reverse gesture returns one stage')
+  for (const step of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+    await buttons.nth(step).click()
+    await page.waitForTimeout(100)
+    await settled()
+    assert.equal(await page.locator('.metal-stage').getAttribute('data-step'), String(step))
+    assert.equal(await buttons.nth(step).getAttribute('aria-current'), 'step')
+    assert.equal(await page.locator('.metal-copy[aria-hidden="false"]').count(), 1, 'one readable copy per stage')
+    assert.equal(await page.locator('.metal-canvas').getAttribute('data-bloom'), '0.000', 'burst settles to sharp image')
+    await page.screenshot({ path: `artifacts/metal-steps/desktop-step-${step}.png` })
+    if (step === 1) {
+      const state = await page.evaluate(() => window.__METALURGICA_SCROLL__.getState().state)
+      assert.equal(state.continuity_layers.raw_block.opacity, 1)
+      assert.equal(state.continuity_layers.cut_components.opacity, 0)
+      assert.equal(state.tools_and_overlays.laser_head.opacity, 0)
+    }
+  }
+  for (const step of [2, 3, 7]) {
+    const samples = []
+    for (const phase of [0.15, 0.5, 1]) {
+      await page.evaluate(([step, phase]) => window.__METALURGICA_SCROLL__.setStepPhase(step, phase), [step, phase])
+      samples.push(await page.locator('.metal-canvas').evaluate(el => ({ ...el.dataset })))
+      await page.screenshot({ path: `artifacts/metal-steps/process-${step}-${phase}.png` })
+      assert.equal(await page.locator('.metal-copy[aria-hidden="false"]').count(), 1)
+    }
+    const field = step === 2 ? 'cutProgress' : step === 3 ? 'bendAngle' : 'boltGap'
+    assert.notEqual(samples[0][field], samples[2][field], 'process geometry changes during the operation')
+    assert.equal(samples[2].bloom, '0.000')
+  }
+  await page.evaluate(() => window.__METALURGICA_SCROLL__.setStepPhase(4, 0.7))
+  assert.ok(Number(await page.locator('.metal-canvas').getAttribute('data-bloom')) > 0.1)
+  assert.equal(await page.locator('.metal-canvas').evaluate(el => el.style.filter), 'none', 'localized glow preserves the workpiece details')
+  await page.screenshot({ path: 'artifacts/metal-steps/bloom.png' })
+  await page.evaluate(() => window.__METALURGICA_SCROLL__.clearOverride())
+  await buttons.nth(9).click()
+  await page.waitForTimeout(100)
+  await settled()
+  await page.mouse.wheel(0, 700)
+  await page.waitForTimeout(200)
+  assert.ok(await page.evaluate(() => scrollY > document.querySelector('#transformacao').offsetTop + document.querySelector('#transformacao').offsetHeight - innerHeight), 'wheel exits after final step')
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.evaluate(() => scrollTo(0, document.querySelector('#transformacao').offsetTop))
+  await page.waitForTimeout(750)
+  await buttons.nth(4).click()
+  await page.waitForTimeout(750)
+  await page.screenshot({ path: 'artifacts/metal-steps/mobile-weld.png' })
+  await buttons.nth(9).click()
+  await page.waitForTimeout(100)
+  await settled()
+  await page.screenshot({ path: 'artifacts/metal-steps/mobile-final.png' })
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.evaluate(() => scrollTo(0, document.querySelector('#transformacao').offsetTop))
+  await page.waitForTimeout(250)
+  assert.ok(await page.locator('#transformacao').evaluate(el => el.offsetHeight <= innerHeight * 1.2))
+  assert.equal(await page.locator('.metal-canvas').getAttribute('data-bloom'), '0.000')
+  assert.deepEqual(errors, [])
+  console.log('PASS: wheel forward/back, direct navigation, isolated raw material, cutting, bending, assembly, stable text, sharp resting states, exit, mobile, reduced motion.')
+} finally { await browser.close() }
