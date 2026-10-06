@@ -1,3 +1,4 @@
+import { submitQuoteRequest } from './quoteApi'
 import {
   ArrowDownRight,
   ArrowRight,
@@ -342,16 +343,26 @@ function QuoteDesign2() {
   const update = (field: keyof FormState, value: string) => { setSubmitted(false); setError(''); setForm((current) => ({ ...current, [field]: value })) }
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (isSubmitting) return
+    setError('')
+    setSubmitted(false)
     const acceptedExtensions = ['pdf', 'dwg', 'dxf', 'jpg', 'jpeg', 'png']
     const invalidFile = files.some((file) => !acceptedExtensions.includes(file.name.split('.').pop()?.toLowerCase() ?? '') || file.size > 10 * 1024 * 1024)
     const totalFileSize = files.reduce((sum, file) => sum + file.size, 0)
     if (!form.companyName.trim() || form.cnpj.replace(/\D/g, '').length !== 14 || !form.contactName.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()) || form.phone.replace(/\D/g, '').length < 10 || !form.serviceType || !form.description.trim() || invalidFile || totalFileSize > 25 * 1024 * 1024) { setError('Preencha os campos obrigatórios com dados válidos e verifique os arquivos anexados.'); return }
     setIsSubmitting(true)
-    await new Promise((resolve) => window.setTimeout(resolve, 900))
-    setIsSubmitting(false)
-    setSubmitted(true)
-    setForm(emptyForm)
-    setFiles([])
+    const formElement = event.currentTarget
+    try {
+      await submitQuoteRequest(form, files)
+      setSubmitted(true)
+      setForm(emptyForm)
+      setFiles([])
+      formElement.reset()
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Não foi possível enviar o orçamento.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
   const input = (field: keyof FormState, label: string, placeholder: string, required = false, type = 'text') => <label className="d2-field"><span>{label}{required ? ' *' : ''}</span><input type={type} value={form[field]} onChange={(event) => update(field, event.target.value)} placeholder={placeholder} required={required} /></label>
 

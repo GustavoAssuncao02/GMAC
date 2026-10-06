@@ -169,7 +169,7 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
         Math.abs(step.frame - state.frame) < Math.abs(metalSteps[best].frame - state.frame) ? index : best, 0)
       const step = operation?.step ?? nearestStep
       const phase = operation?.phase ?? 1
-      const neutralProcessEnvironment = step >= 2 && step <= 5
+      const neutralProcessEnvironment = step >= 2 && step <= 6
       const processLightingReturn = step === 2 ? 0 : T.MathUtils.smoothstep(state.progress, 18 / 79, 25 / 79)
       const close = T.MathUtils.smoothstep(landingAmount(state.progress), 0, 1)
       const finalLightingMix = close
@@ -233,7 +233,7 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
       canvas.style.filter = weldingVisual.blur > 0.025 ? `blur(${weldingVisual.blur.toFixed(3)}px)` : 'none'
       // Reuse the secondary light for warm molten-metal reflections while welding.
       polishLight.color.set(step === 4 ? 0xff9238 : 0xe3f0ff)
-      polishLight.intensity = step === 4 ? weldingVisual.warmIntensity : polishing ? 0.55 : 0
+      polishLight.intensity = step === 4 ? weldingVisual.warmIntensity : polishing ? 0.55 * T.MathUtils.smoothstep(phase, 0, 0.16) : 0
       polishLight.position.copy(step === 4 ? weldingVisual.warmPosition : polishPosition)
       polishLight.position.z += step === 4 ? 0.12 : 0.6
       if (import.meta.env.DEV) {
@@ -255,6 +255,7 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
         canvas.dataset.finish = diagnostics.finish.toFixed(4)
         canvas.dataset.polishing = String(polishing)
         canvas.dataset.polishPosition = polishPosition.toArray().map(value => value.toFixed(3)).join(',')
+        canvas.dataset.polishLightIntensity = polishLight.intensity.toFixed(4)
         canvas.dataset.qualityChecked = String(step === 8 ? qualityChecks.filter((_, i) => qualityCheckProgress(phase, i) === 1).length : 0)
         canvas.dataset.programs = String(renderer.info.programs?.length ?? 0)
         canvas.dataset.lightingRig = 'fixed-side-key-rim'

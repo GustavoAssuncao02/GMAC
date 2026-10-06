@@ -1,3 +1,4 @@
+import { submitQuoteRequest } from './quoteApi'
 import MetalScroll from './metal/MetalScroll'
 import {
   ArrowDown,
@@ -256,14 +257,6 @@ type QuoteFormState = {
 
 type QuoteFormErrors = Partial<Record<keyof QuoteFormState | 'files', string>>
 
-type QuoteSubmission = QuoteFormState & {
-  files: Array<{
-    name: string
-    size: number
-    type: string
-  }>
-}
-
 const initialQuoteForm: QuoteFormState = {
   companyName: '',
   cnpj: '',
@@ -365,12 +358,6 @@ function validateQuoteForm(form: QuoteFormState, files: File[]) {
   }
 
   return errors
-}
-
-async function submitQuoteRequest(payload: QuoteSubmission) {
-  console.info('Mock de envio de orçamento GMAC:', payload)
-  await new Promise((resolve) => window.setTimeout(resolve, 1100))
-  return { ok: true }
 }
 
 const container = {
@@ -1457,6 +1444,7 @@ function QuoteForm() {
   const [form, setForm] = useState<QuoteFormState>(initialQuoteForm)
   const [files, setFiles] = useState<File[]>([])
   const [errors, setErrors] = useState<QuoteFormErrors>({})
+  const [submitError, setSubmitError] = useState('')
   const [isDragging, setIsDragging] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -1557,6 +1545,7 @@ function QuoteForm() {
     event.preventDefault()
     if (isSubmitting) return
 
+    setSubmitError('')
     const validation = validateQuoteForm(form, files)
     setErrors(validation)
 
@@ -1573,14 +1562,7 @@ function QuoteForm() {
     setSubmitted(false)
 
     try {
-      const response = await submitQuoteRequest({
-        ...form,
-        files: files.map((file) => ({
-          name: file.name,
-          size: file.size,
-          type: file.type,
-        })),
-      })
+      const response = await submitQuoteRequest(form, files)
 
       if (response.ok) {
         setSubmitted(true)
@@ -1590,6 +1572,8 @@ function QuoteForm() {
           fileInputRef.current.value = ''
         }
       }
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Não foi possível enviar o orçamento.')
     } finally {
       setIsSubmitting(false)
     }
@@ -1673,6 +1657,7 @@ function QuoteForm() {
             </p>
           </div>
 
+          {submitError ? <p role="alert" className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-700">{submitError}</p> : null}
           {submitted ? (
             <motion.div
               initial={reduceMotion ? false : { opacity: 0, y: -12 }}
