@@ -107,11 +107,11 @@ de branco para laranja e vermelho escuro (`hotSeam`).
 As faíscas são simuladas a partir do instante de emissão, com gravidade,
 arrasto e quique na chapa e no colar. A cor segue uma rampa de corpo negro e
 perde calor a cada impacto. Elas são desenhadas como cápsulas com motion blur,
-na direção da velocidade em tela. Os respingos grudam na chapa e esfriam.
+na direção da velocidade em tela (`sparks.ts`, compartilhado com o laser). Os respingos grudam na chapa e esfriam.
 A reprodução e o retorno entre fases continuam determinísticos.
 
 `bloom.ts` aplica um bloom HDR seletivo. Só os objetos na camada `BLOOM_LAYER`
-(faíscas, arco, cordão quente e faíscas do laser) brilham, e a peça os oculta
+(faíscas, arco, cordão quente, feixe, sangria quente e faíscas do laser) brilham, e a peça os oculta
 corretamente. O passe roda em meia resolução com uma cadeia de mips e só
 quando há algo incandescente na tela. A fumaça fica na `PLAIN_LAYER`.
 
@@ -124,3 +124,23 @@ Laser e tocha entram e saem com movimento, e a broca desliza entre os furos.
 
 `verify-welding-effects.mjs` verifica ignição, bloom, troca de passe, resíduos,
 retorno determinístico, repouso, mobile, reduced motion e FPS durante a operação.
+
+## Efeito visual do corte a laser
+
+`laserEffects.ts` segue a mesma abordagem da solda, consultando `sampleCutContact`
+e `cutWindows` (`mandrel.ts`). O percurso tem quatro contornos (perfil, furo central
+e as duas linhas das abas). Em cada um, o feixe perfura com um clarão curto e depois
+corta com cintilação; entre contornos ele apaga enquanto o bico salta.
+
+No ponto de corte há núcleo branco-amarelado, halo quente, reflexo anamórfico,
+poça incandescente e luz local. As faíscas saem da sangria para cima e para trás
+do bico, se espalham em todas as direções na perfuração, quicam e deslizam na chapa
+e caem livres além da borda. As gotas de borra grudam na chapa e esfriam. Depois que
+o centro e a moldura caem, as faíscas deixam de quicar onde não há mais chapa.
+
+A sangria é uma faixa sobre o percurso que termina exatamente sob o bico: um sulco
+escuro e, por cima, uma camada aditiva que sai branca, passa a laranja e vermelho e
+apaga em poucos décimos de segundo. Os ajustes ficam em `laserVisuals`.
+
+`verify-laser-effects.mjs` verifica perfuração, bloom, faíscas, feixe apagado entre
+contornos, resíduos, retorno determinístico, repouso, mobile, reduced motion e FPS.

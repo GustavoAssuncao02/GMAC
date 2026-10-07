@@ -1,5 +1,6 @@
 import * as T from 'three'
 import { BLOOM_LAYER, PLAIN_LAYER } from './bloom'
+import { createEffectTexture, createSparkStreaks, heatColor, random } from './sparks'
 
 // Visual-only controls. The operation keeps its 3.4 s choreography.
 export const weldingVisuals = {
@@ -17,83 +18,14 @@ export const weldingVisuals = {
   depthOfField: 0.5,
 }
 const smooth = T.MathUtils.smoothstep
-const clamp = (n: number) => T.MathUtils.clamp(n, 0, 1)
-const fract = (n: number) => n - Math.floor(n)
-const random = (n: number) => fract(Math.sin(n * 127.1 + 311.7) * 43758.5453)
 const duration = 3.4
 const capacity = 256
 const simulationStep = 1 / 120
 
-// Blackbody-like ramp in linear HDR: dark, cherry red, orange, yellow, white-hot.
-const heatKeys = [[0, 0, 0], [1.1, 0.14, 0.01], [2.7, 0.82, 0.09], [4.3, 2.1, 0.5], [6.4, 4.7, 2.6]]
-export function heatColor(heat: number, target: T.Color) {
-  const h = clamp(heat) * 4, i = Math.min(3, Math.floor(h)), f = h - i
-  const a = heatKeys[i], b = heatKeys[i + 1]
-  return target.setRGB(a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f)
-}
-
-// Camera-facing capsules stretched along each spark's screen velocity (motion blur).
-const streakVertex = `attribute vec3 aHead; attribute vec3 aTail; attribute vec3 aColor; attribute float aWidth;
-  uniform vec2 uResolution; uniform float uFocus; uniform float uDof;
-  varying vec3 vColor; varying vec2 vLocal; varying float vLength; varying float vWidth;
-  void main() {
-    vec4 viewHead = modelViewMatrix * vec4(aHead, 1.0);
-    vec4 head = projectionMatrix * viewHead;
-    vec4 tail = projectionMatrix * modelViewMatrix * vec4(aTail, 1.0);
-    vec2 halfRes = uResolution * 0.5;
-    vec2 hs = head.xy / head.w * halfRes, ts = tail.xy / tail.w * halfRes;
-    float defocus = clamp(abs(-viewHead.z - uFocus) * uDof, 0.0, 3.0);
-    float px = aWidth * projectionMatrix[1][1] * halfRes.y / head.w * (1.0 + defocus);
-    float width = max(px, 1.25);
-    vec2 axis = hs - ts;
-    float len = length(axis);
-    vec2 dir = len > 0.001 ? axis / len : vec2(1.0, 0.0);
-    vec2 side = vec2(-dir.y, dir.x);
-    float along = mix(-width, len + width, position.x);
-    vec2 screen = ts + dir * along + side * position.y * width;
-    vec4 clip = mix(tail, head, position.x);
-    gl_Position = vec4(screen / halfRes * clip.w, clip.z, clip.w);
-    // Thin, long or defocused sparks spread the same light over more pixels.
-    float spread = mix(1.0, 0.55, clamp(len / (width * 24.0), 0.0, 1.0));
-    vColor = aColor * min(1.0, px / width) * spread / (1.0 + defocus * 0.8);
-    vLocal = vec2(along, position.y * width);
-    vLength = len; vWidth = width;
-  }`
-const streakFragment = `varying vec3 vColor; varying vec2 vLocal; varying float vLength; varying float vWidth;
-  void main() {
-    float dx = max(max(-vLocal.x, vLocal.x - vLength), 0.0);
-    float d = length(vec2(dx, vLocal.y)) / vWidth;
-    float core = exp(-d * d * 4.5);
-    float t = vLength > 0.001 ? clamp(vLocal.x / vLength, 0.0, 1.0) : 1.0;
-    gl_FragColor = vec4(vColor * core * mix(0.12, 1.0, t * t), 1.0);
-    #include <colorspace_fragment>
-    gl_FragColor.a = clamp(max(gl_FragColor.r, max(gl_FragColor.g, gl_FragColor.b)), 0.0, 1.0);
-  }`
-
 export function createWeldingEffects(sampleContact: (phase: number, target: T.Vector3) => boolean,
   windows: readonly (readonly [number, number])[]) {
   const root = new T.Group()
-  const textures: T.Texture[] = []
-  const makeTexture = (smoke: boolean) => {
-    const canvas = document.createElement('canvas')
-    canvas.width = canvas.height = 128
-    const ctx = canvas.getContext('2d')!
-    for (let i = 0; i < (smoke ? 16 : 1); i++) {
-      const x = smoke ? 36 + random(i + 2) * 56 : 64
-      const y = smoke ? 24 + random(i + 51) * 78 : 64
-      const r = smoke ? 12 + random(i + 81) * 23 : 64
-      const g = ctx.createRadialGradient(x, y, 0, x, y, r)
-      g.addColorStop(0, smoke ? '#ffffff35' : '#ffffffff')
-      g.addColorStop(smoke ? 0.35 : 0.1, smoke ? '#ffffff20' : '#ffffffd0')
-      g.addColorStop(smoke ? 0.45 : 0.3, smoke ? '#ffffff10' : '#ffffff30')
-      g.addColorStop(1, '#ffffff00')
-      ctx.fillStyle = g; ctx.fillRect(0, 0, 128, 128)
-    }
-    const texture = new T.CanvasTexture(canvas)
-    textures.push(texture)
-    return texture
-  }
-  const glowTexture = makeTexture(false), smokeTexture = makeTexture(true)
+  const glowTexture = createEffectTexture(false), smokeTexture = createEffectTexture(true)
   const sprite = (color: number, texture = glowTexture, additive = true) => {
     const object = new T.Sprite(new T.SpriteMaterial({ map: texture, color, transparent: true,
       blending: additive ? T.AdditiveBlending : T.NormalBlending, depthWrite: false, toneMapped: false }))
@@ -105,30 +37,14 @@ export function createWeldingEffects(sampleContact: (phase: number, target: T.Ve
   const lens = sprite(0xa8dcff), pool = sprite(0xff7a26), afterglow = sprite(0xff6925)
   const smoke = Array.from({ length: 10 }, () => sprite(0x8cc3ec, smokeTexture, false))
 
-  const geometry = new T.InstancedBufferGeometry()
-  geometry.setAttribute('position', new T.Float32BufferAttribute([0, -1, 0, 1, -1, 0, 0, 1, 0, 1, 1, 0], 3))
-  geometry.setIndex([0, 1, 2, 2, 1, 3])
-  const heads = new Float32Array(capacity * 3), tails = new Float32Array(capacity * 3)
-  const colors = new Float32Array(capacity * 3), widths = new Float32Array(capacity)
-  for (const [name, array, size] of [['aHead', heads, 3], ['aTail', tails, 3], ['aColor', colors, 3], ['aWidth', widths, 1]] as const) {
-    geometry.setAttribute(name, new T.InstancedBufferAttribute(array, size).setUsage(T.DynamicDrawUsage))
-  }
-  geometry.instanceCount = 0
-  const streakMaterial = new T.ShaderMaterial({
-    uniforms: { uResolution: { value: new T.Vector2(1, 1) }, uFocus: { value: 12 }, uDof: { value: weldingVisuals.depthOfField } },
-    vertexShader: streakVertex, fragmentShader: streakFragment, transparent: true, depthWrite: false,
-    blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneFactor,
-  })
-  const streaks = new T.Mesh(geometry, streakMaterial)
-  streaks.frustumCulled = false
-  streaks.layers.set(BLOOM_LAYER)
-  root.add(streaks)
+  const streaks = createSparkStreaks(capacity)
+  const { heads, tails, colors, widths } = streaks
+  root.add(streaks.mesh)
 
   const born = new T.Vector3(), ahead = new T.Vector3(), particle = new T.Vector3(), velocity = new T.Vector3()
   const radial = new T.Vector3(), tangent = new T.Vector3(), towardCamera = new T.Vector3()
   const cameraLocal = new T.Vector3(), gravity = new T.Vector3(), up = new T.Vector3()
-  const rotation = new T.Quaternion(), viewPoint = new T.Vector3(), color = new T.Color()
-  const size = new T.Vector2()
+  const rotation = new T.Quaternion(), color = new T.Color()
   // Sparks bounce off the plate (z = 0.3) and the collar wall (r = 1.38, top z = 0.8).
   const simulate = (age: number, drag: number, sticky: boolean) => {
     const steps = Math.max(1, Math.ceil(age / simulationStep)), h = age / steps
@@ -227,12 +143,7 @@ export function createWeldingEffects(sampleContact: (phase: number, target: T.Ve
         widths[count] = weldingVisuals.sparkWidth * (0.6 + random(seed + 19) * 0.9) * (spatter ? 2.4 : 1) * (nearLens ? 1.25 : 1)
         count++
       }
-      geometry.instanceCount = count
-      for (const name of ['aHead', 'aTail', 'aColor', 'aWidth']) geometry.getAttribute(name).needsUpdate = true
-      parent.localToWorld(viewPoint.copy(contact)); viewPoint.applyMatrix4(camera.matrixWorldInverse)
-      streakMaterial.uniforms.uFocus.value = -viewPoint.z
-      streakMaterial.uniforms.uDof.value = weldingVisuals.depthOfField
-      streakMaterial.uniforms.uResolution.value.copy(renderer.getDrawingBufferSize(size))
+      streaks.commit(count, contact, parent, camera, renderer, weldingVisuals.depthOfField)
 
       let smokeCount = 0
       smoke.forEach((puff, i) => {
@@ -261,6 +172,6 @@ export function createWeldingEffects(sampleContact: (phase: number, target: T.Ve
       return { intensity, flash: peak * intensity, bloom: count || intensity > 0 || residue ? weldingVisuals.bloomStrength * (1 + peak * intensity * 0.5) : 0,
         sparks: count, smoke: smokeCount, warmIntensity: residue ? Math.min(1, count / 60) * endFade * 0.7 : 0, warmPosition: afterglow.position }
     },
-    dispose() { textures.forEach(texture => texture.dispose()) },
+    dispose() { glowTexture.dispose(); smokeTexture.dispose() },
   }
 }

@@ -3,7 +3,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeGeometries, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js'
 import type { createSteelTextures } from './steelTextures'
 import { BLOOM_LAYER } from './bloom'
-import { heatColor } from './weldingEffects'
+import { heatColor, heatRampGlsl } from './sparks'
 
 const smooth = T.MathUtils.smoothstep
 const smoother = T.MathUtils.smootherstep
@@ -28,6 +28,37 @@ const passAt = (phase: number, pass: number) => {
   const [start, end] = weldWindows[pass]
   return travelEase((phase - start) / (end - start))
 }
+// The laser runs along the whole cut path with a smoothstep between these phases.
+const cutStart = 0.06, cutEnd = 0.79
+const cutDuration = 3.6
+
+// Flat ribbon along the cut path; vertices carry the path index and the instant the nozzle reaches them.
+const kerfVertex = `attribute vec3 aSide; attribute vec2 aPath;
+  uniform float uWidth;
+  varying float vAcross; varying vec2 vPath;
+  void main() {
+    vAcross = aSide.z; vPath = aPath;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position + vec3(aSide.xy * uWidth, 0.0), 1.0);
+  }`
+// The cut ends exactly under the nozzle and cools behind it within a few tenths of a second.
+const hotKerfFragment = `uniform float uOffset; uniform float uTime; uniform float uFade;
+  varying float vAcross; varying vec2 vPath;
+  ${heatRampGlsl}
+  void main() {
+    if (vPath.x > uOffset) discard;
+    float age = max(0.0, uTime - vPath.y);
+    float heat = exp(-age / 0.05);
+    gl_FragColor = vec4(heatRamp(heat) * exp(-vAcross * vAcross * 4.0) * uFade * 0.8, 1.0);
+    #include <colorspace_fragment>
+    gl_FragColor.a = clamp(max(gl_FragColor.r, max(gl_FragColor.g, gl_FragColor.b)), 0.0, 1.0);
+  }`
+const kerfFragment = `uniform float uOffset; uniform float uFade;
+  varying float vAcross; varying vec2 vPath;
+  void main() {
+    if (vPath.x > uOffset) discard;
+    gl_FragColor = vec4(0.018, 0.016, 0.015, (1.0 - smoothstep(0.4, 1.0, abs(vAcross))) * 0.85 * uFade);
+    #include <colorspace_fragment>
+  }`
 
 // One workpiece, shared by all stages. Mounting holes and screws use the same anchors.
 export function createMandrel(surface: ReturnType<typeof createSteelTextures>) {
@@ -270,10 +301,41 @@ export function createMandrel(surface: ReturnType<typeof createSteelTextures>) {
   }
   for (const side of [-1, 1]) for (let i = 0; i <= 28; i++) pathPoints.push(new T.Vector3(side * 1.12, mix(-0.69, 0.69, i / 28), 0.305))
   const pathBreaks = [181, 282, 311]
-  const tracePoints = pathPoints.flatMap((point, index) => index === 0 || pathBreaks.includes(index) ? [] : [pathPoints[index - 1], point])
-  const traceGeometry = new T.BufferGeometry().setFromPoints(tracePoints)
-  const trace = new T.LineSegments(traceGeometry, new T.LineBasicMaterial({ color: 0xffb252, transparent: true, toneMapped: false }))
-  tooling.add(trace)
+  const lastPathPoint = pathPoints.length - 1
+  // Inverse of the cut's smoothstep: the phase at which the nozzle reaches a path index.
+  const cutPhaseAt = (index: number) => cutStart + (cutEnd - cutStart) * (0.5 - Math.sin(Math.asin(1 - 2 * index / lastPathPoint) / 3))
+  // Outline, bore and both flange lines; the laser is off while it jumps between them.
+  const contours = [0, ...pathBreaks].map((start, i) => [start, (pathBreaks[i] ?? pathPoints.length) - 1])
+  const cutWindows = contours.map(([start, end]) => [cutPhaseAt(start), cutPhaseAt(end)] as const)
+  const kerfPositions: number[] = [], kerfSides: number[] = [], kerfPath: number[] = [], kerfIndices: number[] = []
+  const kerfDirection = new T.Vector3()
+  for (const [start, end] of contours) for (let i = start; i <= end; i++) {
+    kerfDirection.subVectors(pathPoints[Math.min(end, i + 1)], pathPoints[Math.max(start, i - 1)]).normalize()
+    const vertex = kerfPositions.length / 3
+    for (const side of [-1, 1]) {
+      kerfPositions.push(pathPoints[i].x, pathPoints[i].y, pathPoints[i].z)
+      kerfSides.push(-kerfDirection.y * side, kerfDirection.x * side, side)
+      kerfPath.push(i, cutPhaseAt(i) * cutDuration)
+    }
+    if (i > start) kerfIndices.push(vertex - 2, vertex, vertex - 1, vertex, vertex + 1, vertex - 1)
+  }
+  const kerfGeometry = new T.BufferGeometry()
+  kerfGeometry.setAttribute('position', new T.Float32BufferAttribute(kerfPositions, 3))
+  kerfGeometry.setAttribute('aSide', new T.Float32BufferAttribute(kerfSides, 3))
+  kerfGeometry.setAttribute('aPath', new T.Float32BufferAttribute(kerfPath, 2))
+  kerfGeometry.setIndex(kerfIndices)
+  kerfGeometry.computeBoundingSphere()
+  const kerfUniforms = { uOffset: { value: -1 }, uTime: { value: 0 }, uFade: { value: 1 } }
+  // A dark cut groove, and an additive heat layer over it that feeds the bloom.
+  const kerf = new T.Mesh(kerfGeometry, new T.ShaderMaterial({ uniforms: { ...kerfUniforms, uWidth: { value: 0.009 } },
+    vertexShader: kerfVertex, fragmentShader: kerfFragment, transparent: true, depthWrite: false }))
+  const hotKerf = new T.Mesh(kerfGeometry, new T.ShaderMaterial({ uniforms: { ...kerfUniforms, uWidth: { value: 0.026 } },
+    vertexShader: kerfVertex, fragmentShader: hotKerfFragment, transparent: true, depthWrite: false,
+    blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneFactor }))
+  kerf.renderOrder = 1
+  hotKerf.renderOrder = 2
+  hotKerf.layers.set(BLOOM_LAYER)
+  tooling.add(kerf, hotKerf)
   const pointAlong = (progress: number, points: T.Vector3[], target: T.Vector3) => {
     const offset = clamp(progress) * (points.length - 1)
     const i = Math.min(points.length - 2, Math.floor(offset))
@@ -284,8 +346,10 @@ export function createMandrel(surface: ReturnType<typeof createSteelTextures>) {
   box(laser, 0.25, 0.3, 0.42, 0, 0, 0.53, toolMetal)
   const nozzle = mesh(new T.CylinderGeometry(0.12, 0.026, 0.25, 24), laser, copper)
   nozzle.rotation.x = Math.PI / 2; nozzle.position.z = 0.19
-  const beam = cylinder(laser, 0.011, 0.095, new T.MeshBasicMaterial({ color: 0xffaa45, toneMapped: false }))
+  const beamMaterial = new T.MeshBasicMaterial({ color: new T.Color(3.4, 1.6, 0.42), toneMapped: false })
+  const beam = cylinder(laser, 0.011, 0.095, beamMaterial)
   beam.position.z = 0.035
+  beam.layers.set(BLOOM_LAYER)
 
   // Opposing forming shoes clamp each flange before correcting its angle.
   const presses = ears.map(() => {
@@ -429,6 +493,18 @@ export function createMandrel(surface: ReturnType<typeof createSteelTextures>) {
       pointAlong(passAt(phase, pass), weldPaths[pass], target)
       return true
     },
+    cutWindows,
+    // The cut front while the beam is on; false between contours and outside the cut.
+    sampleCutContact(phase: number, target: T.Vector3) {
+      if (!cutWindows.some(([start, end]) => phase > start && phase < end)) return false
+      pointAlong(smooth(phase, cutStart, cutEnd), pathPoints, target)
+      return true
+    },
+    // Fires only while the cut front is molten; the laser effects drive its flicker.
+    setLaserBeam(intensity: number) {
+      beam.visible = intensity > 0.002
+      beamMaterial.color.setRGB(3.4, 1.6, 0.42).multiplyScalar(Math.min(1.4, intensity))
+    },
     update(step: number, phase: number, presentationLighting = 0) {
       const cutting = step === 2, bending = step === 3, welding = step === 4, machining = step === 5, finishing = step === 6, assembling = step === 7
       const reveal = cutting ? smooth(phase, 0.005, 0.1) : step >= 2 ? 1 : 0
@@ -437,7 +513,7 @@ export function createMandrel(surface: ReturnType<typeof createSteelTextures>) {
       blankMaterial.depthWrite = reveal === 0
       blank.position.z = 0.14 + reveal * 0.025
       body.visible = step >= 2
-      const cut = cutting ? smooth(phase, 0.06, 0.79) : step > 2 ? 1 : 0
+      const cut = cutting ? smooth(phase, cutStart, cutEnd) : step > 2 ? 1 : 0
       const separated = cutting ? smooth(phase, 0.8, 0.98) : step === 3 ? 1 : welding ? 1 - smooth(phase, 0.06, 0.27) : 0
       const corrected = bending ? smooth(phase, 0.32, 0.76) : step > 3 ? 1 : 0
       const finish = finishing ? smooth(phase, 0.1, 0.92) : step > 6 ? 1 : 0
@@ -456,10 +532,10 @@ export function createMandrel(surface: ReturnType<typeof createSteelTextures>) {
       wasteMaterial.depthWrite = wasteMaterial.opacity > 0.98
       centerWaste.visible = cutting && phase < 0.76
       centerWaste.position.z = 0.14 - smooth(phase, 0.61, 0.76) * 0.9
-      trace.visible = cutting && phase > 0.06 && phase < 0.96
-      const cutSegments = Math.floor(cut * (pathPoints.length - 1))
-      traceGeometry.setDrawRange(0, (cutSegments - pathBreaks.filter(index => index <= cutSegments).length) * 2)
-      trace.material.opacity = 1 - smooth(phase, 0.8, 0.96)
+      kerf.visible = hotKerf.visible = cutting && phase > cutStart && phase < 0.96
+      kerfUniforms.uOffset.value = cut * lastPathPoint
+      kerfUniforms.uTime.value = phase * cutDuration
+      kerfUniforms.uFade.value = 1 - smooth(phase, 0.8, 0.96)
       laser.visible = cutting && phase < 0.9
       pointAlong(cut, pathPoints, contact)
       laser.position.copy(contact)

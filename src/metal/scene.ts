@@ -6,6 +6,7 @@ import { createContactShadow } from './contactShadow'
 import { createMandrel, weldWindows } from './mandrel'
 import { createBloom, BLOOM_LAYER, PLAIN_LAYER } from './bloom'
 import { createWeldingEffects, weldingVisuals } from './weldingEffects'
+import { createLaserEffects, laserVisuals } from './laserEffects'
 import { qualityChecks, qualityCheckProgress } from './quality'
 
 export function createMetalScene(canvas: HTMLCanvasElement) {
@@ -132,6 +133,8 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
   mandrel.root.add(glow)
   const weldingEffects = createWeldingEffects(mandrel.sampleWeldContact, weldWindows)
   mandrel.root.add(weldingEffects.root)
+  const laserEffects = createLaserEffects(mandrel.sampleCutContact, mandrel.cutWindows)
+  mandrel.root.add(laserEffects.root)
 
   const arc = new T.PointLight(0xffa451, 0, 5, 2)
   mandrel.root.add(arc)
@@ -216,8 +219,10 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
       canvas.dataset.landing = close.toFixed(4)
       const cutting = effect === 'cut', welding = effect === 'weld', drilling = effect === 'drill'
       const weldingVisual = weldingEffects.update(step, phase, welding, contact, mandrel.root, camera, renderer)
-      const flare = welding ? weldingVisual.intensity : cutting ? 0.18 : drilling ? 0.07 : 0
-      const intensity = cutting ? 0.22 : drilling ? 0.09 : 0
+      const laserVisual = laserEffects.update(step, phase, cutting, contact, mandrel.root, camera, renderer)
+      mandrel.setLaserBeam(laserVisual.intensity)
+      const flare = welding ? weldingVisual.intensity : step === 2 ? laserVisual.intensity : drilling ? 0.07 : 0
+      const intensity = drilling ? 0.09 : 0
       for (let i = 0; intensity > 0 && i < 72; i++) {
         const cycle = (phase * 23 + i * 0.6180339) % 1
         const angle = i * 2.39996
@@ -232,14 +237,15 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
       sparkGeometry.setDrawRange(0, Math.floor(72 * intensity) * 2)
       sparkMaterial.opacity = intensity
       sparkMaterial.color.setRGB(welding ? 7 : 4, welding ? 0.015 : 1.8, welding ? 0.006 : 0.55)
-      glow.visible = !welding && flare > 0
+      glow.visible = drilling
       glow.position.copy(contact).add(new T.Vector3(0, 0, 0.025))
       glow.scale.setScalar(welding ? 0.6 : 0.15)
       glow.material.color.set(welding ? 0xff3020 : 0xffbc6d).multiplyScalar(welding ? 2.5 : 1.5)
       glow.material.opacity = flare
-      arc.position.copy(glow.position)
-      arc.color.set(welding ? 0xb8e7ff : 0xffac58)
-      arc.intensity = welding ? weldingVisual.intensity * weldingVisuals.arcIntensity : flare * 4
+      arc.position.copy(step === 2 ? laserVisual.light : glow.position)
+      arc.color.set(welding ? 0xb8e7ff : step === 2 ? 0xffb066 : 0xffac58)
+      arc.intensity = welding ? weldingVisual.intensity * weldingVisuals.arcIntensity
+        : step === 2 ? laserVisual.intensity * laserVisuals.lightIntensity : flare * 4
       // Reuse the secondary light for warm molten-metal reflections while welding.
       polishLight.color.set(step === 4 ? 0xff9238 : 0xe3f0ff)
       polishLight.intensity = step === 4 ? weldingVisual.warmIntensity : polishing ? 0.55 * T.MathUtils.smoothstep(phase, 0, 0.16) : 0
@@ -251,6 +257,10 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
         canvas.dataset.weldSmoke = String(weldingVisual.smoke)
         canvas.dataset.weldFlash = weldingVisual.flash.toFixed(4)
         canvas.dataset.weldBloom = weldingVisual.bloom.toFixed(3)
+        canvas.dataset.laserSparks = String(laserVisual.sparks)
+        canvas.dataset.laserFumes = String(laserVisual.fumes)
+        canvas.dataset.laserFlash = laserVisual.flash.toFixed(4)
+        canvas.dataset.laserBloom = laserVisual.bloom.toFixed(3)
         canvas.dataset.operation = ['raw', 'raw', 'cut', 'bend', 'weld', 'machining', 'finish', 'assembly', 'quality', 'final'][step]
         canvas.dataset.operationPhase = phase.toFixed(4)
         canvas.dataset.holeCount = String(diagnostics.holes)
@@ -288,7 +298,8 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
       renderer.setClearColor(0x080b0e, 0)
       renderer.render(scene, camera)
       // Bloom only runs while something is incandescent.
-      bloom.render(scene, camera, welding || weldingVisual.bloom > 0 ? weldingVisual.bloom : cutting ? 0.9 : drilling ? 0.5 : 0)
+      bloom.render(scene, camera, welding || weldingVisual.bloom > 0 ? weldingVisual.bloom
+        : laserVisual.bloom > 0 ? laserVisual.bloom : drilling ? 0.5 : 0)
       if (import.meta.env.DEV) {
         canvas.dataset.renderCount = String(++renderCount)
         canvas.dataset.drawCalls = String(renderer.info.render.calls)
@@ -306,7 +317,7 @@ export function createMetalScene(canvas: HTMLCanvasElement) {
       })
       geometries.forEach(geometry => geometry.dispose())
       materials.forEach(material => material.dispose())
-      mandrel.dispose(); weldingEffects.dispose(); bloom.dispose(); surface.dispose(); glowTexture.dispose(); environment.dispose(); bendEnvironment.dispose(); shadow.texture.dispose()
+      mandrel.dispose(); weldingEffects.dispose(); laserEffects.dispose(); bloom.dispose(); surface.dispose(); glowTexture.dispose(); environment.dispose(); bendEnvironment.dispose(); shadow.texture.dispose()
       renderer.dispose()
     },
   }
