@@ -6,10 +6,13 @@ import { resolve } from 'node:path'
 
 const design2EntryPlugin = () => ({
   name: 'design2-entry',
+  apply: 'build' as const,
   closeBundle() {
     const dist = resolve('dist')
     const rootEntry = readFileSync(resolve(dist, 'index.html'), 'utf8')
-    const nestedEntry = rootEntry.replaceAll('./assets/', '../assets/')
+    const nestedEntry = rootEntry
+      .replaceAll('./assets/', '../assets/')
+      .replace('content="index, follow, max-image-preview:large"', 'content="noindex, follow"')
     mkdirSync(resolve(dist, 'design2'), { recursive: true })
     writeFileSync(resolve(dist, 'design2', 'index.html'), nestedEntry)
   },

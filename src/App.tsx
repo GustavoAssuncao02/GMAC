@@ -505,7 +505,7 @@ function AnimatedSection({
   return (
     <motion.section
       id={id}
-      initial={reduceMotion ? false : { opacity: 0, y: 38 }}
+      initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, y: 38 }}
       whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.18 }}
       transition={{ duration: 0.75, ease: 'easeOut' }}
@@ -543,7 +543,7 @@ function CountUp({ value, suffix = '' }: { value: number; suffix?: string }) {
   const ref = useRef<HTMLSpanElement>(null)
   const isInView = useInView(ref, { once: true, amount: 0.6 })
   const reduceMotion = useReducedMotion()
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(import.meta.env.SSR ? value : 0)
 
   useEffect(() => {
     if (!isInView) return
@@ -619,7 +619,7 @@ function Hero() {
       <div className="relative mx-auto flex min-h-[100svh] max-w-7xl items-center px-4 pb-12 pt-24 sm:px-6 sm:pb-20 sm:pt-32 lg:px-8">
         <motion.div
           variants={container}
-          initial={reduceMotion ? false : 'hidden'}
+          initial={import.meta.env.SSR || reduceMotion ? false : 'hidden'}
           animate="visible"
           className="max-w-6xl"
         >
@@ -628,7 +628,7 @@ function Hero() {
             className="mb-5 inline-flex max-w-full flex-wrap items-center gap-3 rounded-md border border-white/16 bg-white/10 px-3 py-2 text-[0.62rem] font-bold uppercase tracking-[0.1em] text-white/90 shadow-[0_16px_36px_rgba(0,0,0,0.12)] backdrop-blur sm:mb-6 sm:px-4 sm:text-xs sm:tracking-[0.2em]"
           >
             <span className="h-2 w-2 bg-gmac-orange" />
-            <span>GMAC Metalúrgica</span>
+            <span>GMAC Metalúrgica em Feira de Santana - BA</span>
           </motion.div>
 
           <motion.h1
@@ -643,8 +643,8 @@ function Hero() {
             variants={item}
             className="mt-5 max-w-2xl text-base font-semibold leading-7 text-white/92 sm:mt-7 sm:text-xl sm:leading-8"
           >
-            Usinagem, caldeiraria e manutenção industrial com experiência,
-            precisão e compromisso com cada projeto.
+            GMAC Metalúrgica: usinagem, caldeiraria e manutenção industrial
+            em Feira de Santana, Bahia. Precisão e compromisso com cada projeto.
           </motion.p>
 
           <motion.div
@@ -728,17 +728,17 @@ function About() {
             A GMAC
           </p>
           <h2 className="mt-5 max-w-2xl text-balance text-3xl font-black leading-tight tracking-normal text-gmac-ink sm:text-4xl lg:text-5xl">
-            ENGENHARIA, EXPERIÊNCIA E PRECISÃO.
+            GMAC METALÚRGICA EM FEIRA DE SANTANA
           </h2>
           <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:mt-7 sm:text-lg sm:leading-8">
-            A GMAC Metalúrgica atua com soluções industriais, unindo experiência
-            técnica, capacidade produtiva e compromisso com a execução dos
-            serviços.
+            A GMAC Metalúrgica, em Feira de Santana - BA, atua com usinagem de
+            peças, caldeiraria e manutenção industrial. Unimos experiência
+            técnica, capacidade produtiva e compromisso com a execução dos serviços.
           </p>
 
           <motion.div
             variants={container}
-            initial={reduceMotion ? false : 'hidden'}
+            initial={import.meta.env.SSR || reduceMotion ? false : 'hidden'}
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-3"
@@ -785,7 +785,7 @@ function About() {
         </div>
 
         <motion.div
-          initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }}
+          initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, scale: 0.97 }}
           whileInView={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
@@ -1046,7 +1046,7 @@ function Clients() {
 
       <div className="relative mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
         <motion.div
-          initial={reduceMotion ? false : { opacity: 0, x: -24 }}
+          initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, x: -24 }}
           whileInView={reduceMotion ? undefined : { opacity: 1, x: 0 }}
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.7, ease: 'easeOut' }}
@@ -1065,7 +1065,7 @@ function Clients() {
         </motion.div>
 
         <motion.div
-          initial={reduceMotion ? false : { opacity: 0, scale: 0.96 }}
+          initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, scale: 0.96 }}
           whileInView={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.75, ease: 'easeOut' }}
@@ -1162,7 +1162,7 @@ function Services() {
               Serviços
             </p>
             <h2 className="mt-5 max-w-3xl text-balance text-3xl font-black leading-tight tracking-normal sm:text-4xl lg:text-5xl">
-              SOLUÇÕES PARA A INDÚSTRIA
+              USINAGEM, CALDEIRARIA E MANUTENÇÃO INDUSTRIAL
             </h2>
           </div>
           <p className="max-w-md text-base leading-7 text-slate-300">
@@ -1173,7 +1173,7 @@ function Services() {
 
         <motion.div
           variants={container}
-          initial={reduceMotion ? false : 'hidden'}
+          initial={import.meta.env.SSR || reduceMotion ? false : 'hidden'}
           whileInView="visible"
           viewport={{ once: true, amount: 0.14 }}
           className="mt-9 grid gap-4 sm:mt-12 md:grid-cols-2 xl:grid-cols-3"
@@ -1227,7 +1227,7 @@ function ProcessTimeline() {
           <div className="relative hidden xl:block">
             <div className="absolute left-8 right-8 top-7 h-px bg-white/14" />
             <motion.div
-              initial={reduceMotion ? false : { scaleX: 0 }}
+              initial={import.meta.env.SSR || reduceMotion ? false : { scaleX: 0 }}
               whileInView={reduceMotion ? undefined : { scaleX: 1 }}
               viewport={{ once: true, amount: 0.4 }}
               transition={{ duration: 1.1 }}
@@ -1238,7 +1238,7 @@ function ProcessTimeline() {
               {processSteps.map((step, index) => (
                 <motion.li
                   key={step.number}
-                  initial={reduceMotion ? false : { opacity: 0, y: 26 }}
+                  initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, y: 26 }}
                   whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.45 }}
                   transition={{ duration: 0.58, delay: index * 0.08 }}
@@ -1265,7 +1265,7 @@ function ProcessTimeline() {
             {processSteps.map((step, index) => (
               <motion.li
                 key={step.number}
-                initial={reduceMotion ? false : { opacity: 0, x: -20 }}
+                initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, x: -20 }}
                 whileInView={reduceMotion ? undefined : { opacity: 1, x: 0 }}
                 viewport={{ once: true, amount: 0.4 }}
                 transition={{ duration: 0.55, delay: index * 0.05 }}
@@ -1303,7 +1303,7 @@ function GalleryCard({
 
   return (
     <motion.article
-      initial={reduceMotion ? false : { opacity: 0, y: 26 }}
+      initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, y: 26 }}
       whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.25 }}
       transition={{ duration: 0.55, delay: index * 0.06 }}
@@ -1391,7 +1391,7 @@ function Quality() {
 
         <motion.div
           variants={container}
-          initial={reduceMotion ? false : 'hidden'}
+          initial={import.meta.env.SSR || reduceMotion ? false : 'hidden'}
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
           className="mt-9 grid gap-4 sm:mt-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
@@ -1590,7 +1590,7 @@ function QuoteForm() {
 
       <div className="relative mx-auto grid w-full max-w-[96rem] items-stretch gap-4 xl:grid-cols-[0.3fr_0.7fr] xl:gap-0">
         <motion.aside
-          initial={reduceMotion ? false : { opacity: 0, x: -26 }}
+          initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, x: -26 }}
           whileInView={reduceMotion ? undefined : { opacity: 1, x: 0 }}
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.7 }}
@@ -1638,7 +1638,7 @@ function QuoteForm() {
         <motion.form
           noValidate
           onSubmit={handleSubmit}
-          initial={reduceMotion ? false : { opacity: 0, x: 26 }}
+          initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, x: 26 }}
           whileInView={reduceMotion ? undefined : { opacity: 1, x: 0 }}
           viewport={{ once: true, amount: 0.18 }}
           transition={{ duration: 0.7 }}
@@ -1660,7 +1660,7 @@ function QuoteForm() {
           {submitError ? <p role="alert" className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-700">{submitError}</p> : null}
           {submitted ? (
             <motion.div
-              initial={reduceMotion ? false : { opacity: 0, y: -12 }}
+              initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               className="mt-6 flex gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-900"
               role="status"
