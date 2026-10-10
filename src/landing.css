@@ -41,6 +41,22 @@ a {
   background: #f47a20;
 }
 
+.industrial-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+}
+
+.fluid-grid {
+  background-image:
+    linear-gradient(rgba(40, 118, 158, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(40, 118, 158, 0.09) 1px, transparent 1px);
+  background-size: 52px 52px;
+  pointer-events: none;
+}
+
 /* The chamfered corner is reserved for primary calls to action. */
 .brand-corners {
   clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));

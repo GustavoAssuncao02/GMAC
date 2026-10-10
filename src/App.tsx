@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Trash2,
   UploadCloud,
+  Workflow,
   X,
 } from 'lucide-react'
 import {
@@ -30,9 +31,11 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type CSSProperties,
   type DragEvent,
   type FormEvent,
   type InputHTMLAttributes,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react'
 
@@ -104,37 +107,37 @@ const services = [
 const processSteps = [
   {
     number: '01',
-    title: 'Solicitação',
+    title: 'SOLICITAÇÃO',
     description: 'O cliente apresenta sua necessidade.',
   },
   {
     number: '02',
-    title: 'Levantamento',
+    title: 'LEVANTAMENTO',
     description: 'Coleta de dados técnicos, medidas, materiais e desenhos.',
   },
   {
     number: '03',
-    title: 'Orçamento',
+    title: 'ORÇAMENTO',
     description: 'Análise e preparação da proposta.',
   },
   {
     number: '04',
-    title: 'Autorização',
+    title: 'AUTORIZAÇÃO',
     description: 'Aprovação e liberação do serviço.',
   },
   {
     number: '05',
-    title: 'Produção',
+    title: 'PRODUÇÃO',
     description: 'Execução acompanhada e registrada.',
   },
   {
     number: '06',
-    title: 'Inspeção',
+    title: 'INSPEÇÃO',
     description: 'Controle de qualidade.',
   },
   {
     number: '07',
-    title: 'Entrega',
+    title: 'ENTREGA',
     description: 'Conclusão e liberação.',
   },
 ]
@@ -700,41 +703,265 @@ function About() {
   )
 }
 
-function Clients() {
+function RoundLogoCarousel({
+  images,
+  imageWidth = 250,
+  imageHeight = 156,
+  spacing = 2.6,
+  speed = 2,
+  direction = 'right',
+  drag = true,
+  sensitivity = 4,
+  tilt = -7,
+  perspective = 2600,
+  cornerRadius = 8,
+  innerDim = 7,
+}: {
+  images: typeof clientLogos
+  imageWidth?: number
+  imageHeight?: number
+  spacing?: number
+  speed?: number
+  direction?: 'right' | 'left'
+  drag?: boolean
+  sensitivity?: number
+  tilt?: number
+  perspective?: number
+  cornerRadius?: number
+  innerDim?: number
+}) {
+  const reduceMotion = useReducedMotion()
+  const hostRef = useRef<HTMLDivElement>(null)
+  const ringRef = useRef<HTMLDivElement>(null)
+  const rafRef = useRef<number | null>(null)
+  const rotYRef = useRef(0)
+  const velRef = useRef(0)
+  const lastRef = useRef(0)
+  const dragRef = useRef({ active: false, x: 0 })
+  const [size, setSize] = useState({ width: imageWidth, height: imageHeight })
+
+  const items = images.length > 0 ? images : clientLogos
+  const count = items.length
+  const angle = 360 / count
+  const factor = 1 + spacing * 0.15
+  const radius = (size.width * factor) / (2 * Math.tan(Math.PI / count))
+  const degPerSec = speed * 6 * (direction === 'left' ? -1 : 1)
+  const faceBase: CSSProperties = {
+    position: 'absolute',
+    inset: 0,
+    borderRadius: cornerRadius,
+    overflow: 'hidden',
+    backfaceVisibility: 'hidden',
+  }
+
+  const applyRingTransform = () => {
+    const ring = ringRef.current
+    if (!ring) return
+    ring.style.transform = `translateZ(${-radius}px) rotateY(${rotYRef.current}deg)`
+  }
+
+  useEffect(() => {
+    const host = hostRef.current
+    if (!host) return
+
+    const measure = () => {
+      const nextWidth = Math.min(imageWidth, Math.max(154, Math.round(host.clientWidth * 0.46)))
+      const nextHeight = Math.round(nextWidth * (imageHeight / imageWidth))
+      setSize((current) =>
+        current.width === nextWidth && current.height === nextHeight
+          ? current
+          : { width: nextWidth, height: nextHeight },
+      )
+    }
+
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(host)
+    return () => observer.disconnect()
+  }, [imageHeight, imageWidth])
+
+  useEffect(() => {
+    const ring = ringRef.current
+    if (!ring) return
+
+    lastRef.current = 0
+    applyRingTransform()
+
+    if (reduceMotion) return
+
+    const draw = (now: number) => {
+      const dt = lastRef.current ? (now - lastRef.current) / 1000 : 0
+      lastRef.current = now
+      const frameDelta = Math.min(dt, 0.1)
+
+      if (!dragRef.current.active) {
+        if (Math.abs(velRef.current) > 0.01) {
+          rotYRef.current += velRef.current * frameDelta
+          velRef.current *= 0.94
+        } else {
+          rotYRef.current += degPerSec * frameDelta
+        }
+      }
+
+      applyRingTransform()
+      rafRef.current = requestAnimationFrame(draw)
+    }
+
+    rafRef.current = requestAnimationFrame(draw)
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current)
+      }
+    }
+  }, [degPerSec, radius, reduceMotion])
+
+  const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!drag) return
+
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+    dragRef.current = { active: true, x: event.clientX }
+    velRef.current = 0
+  }
+
+  const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current.active) return
+
+    const dx = event.clientX - dragRef.current.x
+    dragRef.current.x = event.clientX
+    const strength = 0.3 * sensitivity
+    rotYRef.current += dx * strength
+    velRef.current = dx * strength * 60
+    applyRingTransform()
+  }
+
+  const onPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+    dragRef.current.active = false
+  }
+
   return (
-    <section id="clientes" className="border-y border-slate-200 bg-white py-16 sm:py-20">
-      <div className={shell}>
-        <Reveal className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <Eyebrow>Principais clientes</Eyebrow>
-            <h2 className="mt-5 max-w-xl text-balance text-2xl font-medium leading-tight tracking-[-0.025em] text-gmac-ink sm:text-3xl">
-              Marcas presentes na trajetória da GMAC.
-            </h2>
+    <div
+      ref={hostRef}
+      className="relative h-full min-h-[230px] w-full touch-none overflow-hidden sm:min-h-[270px] lg:min-h-[300px]"
+      style={{
+        cursor: drag ? 'grab' : 'default',
+        perspective: `${perspective}px`,
+      }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      aria-label="Carrossel de logos dos principais clientes"
+    >
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div
+          style={{
+            transform: `rotateX(${tilt}deg)`,
+            transformStyle: 'preserve-3d',
+          }}
+        >
+          <div
+            ref={ringRef}
+            style={{
+              height: size.height,
+              position: 'relative',
+              transformStyle: 'preserve-3d',
+              width: size.width,
+            }}
+          >
+            {items.map((logo, index) => (
+              <div
+                key={logo.src}
+                style={{
+                  inset: 0,
+                  position: 'absolute',
+                  transform: `rotateY(${index * angle}deg) translateZ(${radius}px)`,
+                  transformStyle: 'preserve-3d',
+                }}
+              >
+                <div
+                  className="flex h-full w-full items-center justify-center border border-slate-200/80 bg-white p-5 shadow-[0_20px_52px_rgba(16,47,70,0.18)] sm:p-7"
+                  style={faceBase}
+                >
+                  <img
+                    src={logo.src}
+                    alt={logo.alt}
+                    className="h-full w-full select-none object-contain"
+                    draggable={false}
+                    loading="lazy"
+                  />
+                </div>
+                <div
+                  aria-hidden="true"
+                  className="flex h-full w-full items-center justify-center border border-slate-200/80 bg-gmac-steel p-5 shadow-xl shadow-slate-950/10 sm:p-7"
+                  style={{
+                    ...faceBase,
+                    filter: `brightness(${innerDim / 10})`,
+                    transform: 'rotateY(180deg)',
+                  }}
+                >
+                  <img
+                    src={logo.src}
+                    alt=""
+                    className="h-full w-full select-none object-contain"
+                    draggable={false}
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            ))}
           </div>
-          <p className="max-w-sm text-base leading-7 text-slate-600">
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Clients() {
+  const reduceMotion = useReducedMotion()
+
+  return (
+    <section
+      id="clientes"
+      className="relative overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#f2f8fb_100%)] py-16 sm:py-20 lg:py-28 xl:py-32"
+    >
+      <div className="fluid-grid absolute inset-0 opacity-55" />
+      <div className="absolute -right-12 top-16 hidden h-40 w-40 rotate-45 border-[14px] border-gmac-orange/8 sm:block" />
+      <div className="absolute bottom-10 left-10 hidden h-28 w-28 rotate-45 border border-gmac-blue/12 md:block" />
+
+      <div className={`${shell} relative grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center`}>
+        <motion.div
+          initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, x: -24 }}
+          whileInView={reduceMotion ? undefined : { opacity: 1, x: 0 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
+          className="max-w-2xl"
+        >
+          <p className="text-xs font-black uppercase tracking-[0.24em] text-gmac-orange">
+            Principais clientes
+          </p>
+          <h2 className="mt-5 text-balance text-3xl font-black leading-tight tracking-normal text-gmac-ink sm:text-4xl lg:text-[2.6rem]">
+            MARCAS PRESENTES NA TRAJETÓRIA DA GMAC.
+          </h2>
+          <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:mt-7 sm:text-lg sm:leading-8">
             Algumas das marcas atendidas pela GMAC Metalúrgica em demandas
             industriais.
           </p>
-        </Reveal>
+        </motion.div>
 
-        <Reveal delay={0.1}>
-          <ul className="mt-10 flex flex-wrap items-center justify-center gap-x-12 gap-y-9 border-t border-slate-200 pt-10 sm:gap-x-16 lg:justify-between">
-            {clientLogos.map((logo) => (
-              <li key={logo.alt}>
-                <img
-                  src={logo.src}
-                  alt={logo.alt}
-                  width={logo.width}
-                  height={logo.height}
-                  loading="lazy"
-                  decoding="async"
-                  className="h-9 w-auto select-none sm:h-11"
-                  draggable={false}
-                />
-              </li>
-            ))}
-          </ul>
-        </Reveal>
+        <motion.div
+          initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, scale: 0.96 }}
+          whileInView={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 0.75, ease: 'easeOut' }}
+          className="relative min-h-[230px] overflow-hidden sm:min-h-[270px] lg:min-h-[300px]"
+        >
+          <div className="relative h-full">
+            <RoundLogoCarousel images={clientLogos} />
+          </div>
+        </motion.div>
       </div>
     </section>
   )
@@ -832,46 +1059,102 @@ function ProcessTimeline() {
   const reduceMotion = useReducedMotion()
 
   return (
-    <section id="processo" className={`bg-white ${sectionSpacing}`}>
-      <div className={shell}>
-        <Reveal className="max-w-3xl">
-          <Eyebrow>Processo</Eyebrow>
-          <h2 className={`${sectionTitle} text-gmac-ink`}>
-            Do primeiro contato à entrega
+    <section
+      id="processo"
+      className="relative overflow-hidden bg-[linear-gradient(135deg,#123149_0%,#18455b_52%,#10283c_100%)] py-16 text-white sm:py-20 lg:py-28 xl:py-32"
+    >
+      <div className="industrial-grid absolute inset-0 opacity-24" />
+      <div className="absolute -left-14 top-16 hidden h-44 w-44 rotate-45 border-[18px] border-gmac-orange/8 sm:block" />
+      <div className="absolute bottom-14 right-16 hidden h-36 w-36 rotate-45 border border-gmac-cyan/18 sm:block" />
+
+      <Reveal className={`${shell} relative`}>
+        <div className="max-w-4xl">
+          <div className="mb-6 inline-flex items-center gap-3 rounded-md border border-white/12 bg-white/[0.08] px-4 py-2">
+            <Workflow size={18} className="text-gmac-orange" />
+            <span className="text-xs font-black uppercase tracking-[0.2em] text-white/66">
+              Processo
+            </span>
+          </div>
+          <h2 className="text-balance text-3xl font-black leading-tight tracking-normal sm:text-4xl lg:text-5xl">
+            DO PRIMEIRO CONTATO À ENTREGA
           </h2>
-          <p className="mt-6 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+          <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 sm:mt-7 sm:text-lg sm:leading-8">
             Cada etapa organiza a solicitação para dar clareza ao orçamento,
             à produção, à inspeção e à entrega final.
           </p>
-        </Reveal>
+        </div>
 
-        <ol className="mt-14 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
-          {processSteps.map((step, index) => (
-            <motion.li
-              key={step.number}
-              initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, y: 20 }}
-              whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+        <div className="mt-9 rounded-lg border border-white/12 bg-[#123149] p-4 shadow-[0_26px_70px_rgba(2,8,16,0.24)] sm:mt-12 sm:p-6">
+          <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4 sm:mb-6">
+            <span className="text-xs font-black uppercase tracking-[0.18em] text-gmac-orange">
+              Fluxo do atendimento
+            </span>
+            <span className="h-2 w-2 bg-gmac-cyan" />
+          </div>
+
+          <div className="relative hidden xl:block">
+            <div className="absolute left-8 right-8 top-7 h-px bg-white/14" />
+            <motion.div
+              initial={import.meta.env.SSR || reduceMotion ? false : { scaleX: 0 }}
+              whileInView={reduceMotion ? undefined : { scaleX: 1 }}
               viewport={{ once: true, amount: 0.4 }}
-              transition={{ duration: 0.5, delay: index * 0.06 }}
-              className="relative border-t border-slate-300 pt-5"
-            >
-              <span
-                aria-hidden="true"
-                className="absolute -top-[5px] left-0 h-[9px] w-[9px] bg-gmac-orange"
-              />
-              <p className="text-sm font-semibold tabular-nums text-gmac-ember">
-                {step.number}
-              </p>
-              <h3 className="mt-3 text-base font-semibold text-gmac-ink">
-                {step.title}
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                {step.description}
-              </p>
-            </motion.li>
-          ))}
-        </ol>
-      </div>
+              transition={{ duration: 1.1 }}
+              className="absolute left-8 right-8 top-7 h-px origin-left bg-gmac-orange"
+            />
+
+            <ol className="grid grid-cols-7 gap-4">
+              {processSteps.map((step, index) => (
+                <motion.li
+                  key={step.number}
+                  initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, y: 26 }}
+                  whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.45 }}
+                  transition={{ duration: 0.58, delay: index * 0.08 }}
+                  className="relative"
+                >
+                  <div className="relative z-10 mb-6 flex h-14 w-14 items-center justify-center rounded-md border-4 border-[#123149] bg-gmac-orange text-sm font-black text-white shadow-xl shadow-black/20">
+                    {step.number}
+                  </div>
+                  <div className="h-48 rounded-lg border border-white/12 bg-[#1a4056] p-4 shadow-[0_18px_42px_rgba(2,8,16,0.18)]">
+                    <h3 className="text-[0.8125rem] font-black tracking-normal text-white">
+                      {step.title}
+                    </h3>
+                    <p className="mt-4 text-sm leading-6 text-slate-300">
+                      {step.description}
+                    </p>
+                  </div>
+                </motion.li>
+              ))}
+            </ol>
+          </div>
+
+          <ol className="relative grid gap-4 xl:hidden">
+            <div className="absolute bottom-8 left-6 top-8 w-px bg-white/14" />
+            {processSteps.map((step, index) => (
+              <motion.li
+                key={step.number}
+                initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, x: -20 }}
+                whileInView={reduceMotion ? undefined : { opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{ duration: 0.55, delay: index * 0.05 }}
+                className="relative grid grid-cols-[2.5rem_1fr] gap-3 sm:grid-cols-[3rem_1fr] sm:gap-4"
+              >
+                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-md bg-gmac-orange text-xs font-black text-white shadow-xl shadow-black/20 sm:h-12 sm:w-12 sm:text-sm">
+                  {step.number}
+                </div>
+                <div className="rounded-lg border border-white/12 bg-[#1a4056] p-4 shadow-[0_18px_42px_rgba(2,8,16,0.18)] sm:p-5">
+                  <h3 className="text-base font-black tracking-normal text-white sm:text-lg">
+                    {step.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-300">
+                    {step.description}
+                  </p>
+                </div>
+              </motion.li>
+            ))}
+          </ol>
+        </div>
+      </Reveal>
     </section>
   )
 }

@@ -6,10 +6,6 @@ As setas visíveis permitem pular operações em andamento e os botões numerado
 acessam diretamente cada etapa. Com foco na seção, use as teclas esquerda/direita.
 A rolagem vertical permanece livre e não altera a animação. Os controles de
 anterior/próxima ficam desabilitados nos respectivos limites.
-Quando mais da metade da seção está visível, a sequência avança sozinha uma
-vez, etapa por etapa, até a peça final. Qualquer interação (arraste, setas,
-teclado ou botões de etapa) encerra a reprodução automática; fora da tela ela
-pausa. Não há reprodução automática com redução de movimento.
 Validação da navegação: `node scripts/verify-metal-horizontal.mjs <playwright/index.mjs>`.
 
 `storyboard.json` contém os 80 targets do `STORYBOARD_80.json` fornecido no
