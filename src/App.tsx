@@ -50,7 +50,6 @@ const navItems = [
 const heroFacts = [
   { value: '18+', label: 'anos de experiência' },
   { value: '5', label: 'frentes de serviço' },
-  { value: 'CIS', label: 'Centro Industrial do Subaé' },
 ]
 
 const commitments = [
@@ -626,7 +625,7 @@ function Hero() {
 
           <motion.ul
             variants={item}
-            className="mt-12 grid max-w-3xl grid-cols-3 gap-4 border-t border-white/15 pt-6 sm:mt-16 sm:gap-10 sm:pt-8"
+            className="mt-12 grid max-w-md grid-cols-2 gap-4 border-t border-white/15 pt-6 sm:mt-16 sm:gap-10 sm:pt-8"
           >
             {heroFacts.map((fact) => (
               <li key={fact.label}>
