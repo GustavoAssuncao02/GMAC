@@ -8,8 +8,11 @@ O endereço antigo do GitHub Pages redireciona para esse domínio.
 - Título, descrição e conteúdo identificam a GMAC Metalúrgica, caldeiraria,
   usinagem, manutenção industrial e Feira de Santana, BA.
 - URL canônica, compartilhamento e dados estruturados usam o domínio público.
-- Dados estruturados descrevem os serviços, endereço e telefone já existentes
-  no site, sem inventar avaliações, horários ou certificações.
+- Dados estruturados descrevem os serviços, endereço, telefone e horário de
+  funcionamento, sem inventar avaliações ou certificações. Endereço, CEP e
+  horário (seg. a qui. 07:30–17:30, sex. 07:30–16:30) foram copiados do Perfil
+  da Empresa no Google em 10/10/2026; se mudarem lá, atualize `index.html` e
+  `businessHours` em `src/App.tsx`.
 - `public/sitemap.xml` lista apenas a página principal. As seções com `#` não
   são páginas independentes. `public/robots.txt` permite rastreamento e indica
   o sitemap. `public/CNAME` mantém o domínio já configurado no GitHub Pages.

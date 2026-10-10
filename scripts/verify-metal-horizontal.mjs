@@ -11,7 +11,7 @@ try {
   page.on('pageerror',e=>errors.push(e.message))
   await page.goto('http://127.0.0.1:5173/',{waitUntil:'networkidle'})
   await page.screenshot({path:`artifacts/horizontal/hero-${mobile}.png`})
-  assert.ok(await page.locator('#inicio img').evaluate(el=>el.complete && el.naturalWidth>0 && el.src.endsWith('hero-soldagem.jpeg')))
+  assert.ok(await page.locator('#inicio img').evaluate(el=>el.complete && el.naturalWidth>0 && /hero-soldagem-\d+\.webp$/.test(el.currentSrc)))
   await page.evaluate(()=>{document.documentElement.style.scrollBehavior='auto';scrollTo(0,document.querySelector('#transformacao').offsetTop)})
   await page.waitForSelector('.metal-stage[data-ready="true"]',{timeout:60000})
   const stage=page.locator('.metal-stage'); const next=page.locator('.metal-arrows button').nth(1); const prev=page.locator('.metal-arrows button').nth(0)

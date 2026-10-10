@@ -1,36 +1,25 @@
 import { submitQuoteRequest } from './quoteApi'
 import MetalScroll from './metal/MetalScroll'
 import {
-  ArrowDown,
-  ArrowRight,
   AlertCircle,
+  ArrowRight,
+  ArrowUpRight,
   CheckCircle2,
-  ClipboardCheck,
-  Cog,
+  ChevronDown,
+  Clock,
   FileText,
-  Gauge,
-  Hammer,
-  Handshake,
   Loader2,
   MapPin,
   Menu,
+  MessageCircle,
   Phone,
-  Ruler,
-  ScanLine,
   ShieldCheck,
-  Target,
-  Timer,
   Trash2,
   UploadCloud,
-  Workflow,
-  Wrench,
   X,
-  Zap,
-  type LucideIcon,
 } from 'lucide-react'
 import {
   motion,
-  useInView,
   useReducedMotion,
   useScroll,
   useTransform,
@@ -43,6 +32,8 @@ import {
   type ChangeEvent,
   type DragEvent,
   type FormEvent,
+  type InputHTMLAttributes,
+  type ReactNode,
 } from 'react'
 
 const assetUrl = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`
@@ -56,159 +47,144 @@ const navItems = [
   { label: 'Contato', href: '#contato' },
 ]
 
-const services: Array<{
-  title: string
-  description: string
-  image: string
-  imageAlt: string
-  icon: LucideIcon
-}> = [
+const heroFacts = [
+  { value: '18+', label: 'anos de experiência' },
+  { value: '5', label: 'frentes de serviço' },
+  { value: 'CIS', label: 'Centro Industrial do Subaé' },
+]
+
+const commitments = [
+  { term: 'Experiência', detail: 'Mais de 18 anos de atuação em serviços industriais.' },
+  { term: 'Precisão', detail: 'Em cada etapa da fabricação.' },
+  { term: 'Controle', detail: 'Inspeção de qualidade antes da entrega.' },
+  { term: 'Compromisso', detail: 'Com a execução de cada serviço.' },
+  { term: 'Confiabilidade', detail: 'Produção acompanhada e registrada.' },
+]
+
+const services = [
   {
-    title: 'USINAGEM',
+    title: 'Usinagem',
+    quoteOption: 'Usinagem',
     description:
       'Fabricação e usinagem de componentes e peças conforme necessidade do projeto.',
     image: assetUrl('assets/gmac-real/usinagem-cnc.webp'),
     imageAlt: 'Ferramenta de usinagem trabalhando em componente metálico',
-    icon: Cog,
   },
   {
-    title: 'CALDEIRARIA',
+    title: 'Caldeiraria',
+    quoteOption: 'Caldeiraria',
     description:
       'Fabricação e montagem de estruturas e componentes metálicos.',
     image: assetUrl('assets/gmac-real/caldeiraria.webp'),
     imageAlt: 'Soldagem de estrutura cilíndrica na oficina',
-    icon: Hammer,
   },
   {
-    title: 'MANUTENÇÃO INDUSTRIAL',
+    title: 'Manutenção industrial',
+    quoteOption: 'Manutenção industrial',
     description:
       'Serviços voltados à manutenção e continuidade da operação industrial.',
     image: assetUrl('assets/gmac-real/manutencao.webp'),
     imageAlt: 'Profissional da GMAC ajustando equipamento industrial',
-    icon: Wrench,
   },
   {
-    title: 'CORTE A LASER',
+    title: 'Corte a laser',
+    quoteOption: 'Corte a laser',
     description: 'Soluções de corte para componentes e projetos metálicos.',
     image: assetUrl('assets/gmac-real/detalhe-peca.webp'),
     imageAlt: 'Detalhe de componente metálico com recortes e furos',
-    icon: Zap,
   },
   {
-    title: 'SERVIÇOS EXTERNOS',
+    title: 'Serviços externos',
+    quoteOption: 'Serviço externo',
     description: 'Integração e acompanhamento de serviços complementares.',
     image: assetUrl('assets/gmac-real/servicos-tecnicos.webp'),
     imageAlt: 'Profissional conferindo um componente na bancada',
-    icon: ClipboardCheck,
   },
 ]
 
 const processSteps = [
   {
     number: '01',
-    title: 'SOLICITAÇÃO',
+    title: 'Solicitação',
     description: 'O cliente apresenta sua necessidade.',
   },
   {
     number: '02',
-    title: 'LEVANTAMENTO',
+    title: 'Levantamento',
     description: 'Coleta de dados técnicos, medidas, materiais e desenhos.',
   },
   {
     number: '03',
-    title: 'ORÇAMENTO',
+    title: 'Orçamento',
     description: 'Análise e preparação da proposta.',
   },
   {
     number: '04',
-    title: 'AUTORIZAÇÃO',
+    title: 'Autorização',
     description: 'Aprovação e liberação do serviço.',
   },
   {
     number: '05',
-    title: 'PRODUÇÃO',
+    title: 'Produção',
     description: 'Execução acompanhada e registrada.',
   },
   {
     number: '06',
-    title: 'INSPEÇÃO',
+    title: 'Inspeção',
     description: 'Controle de qualidade.',
   },
   {
     number: '07',
-    title: 'ENTREGA',
+    title: 'Entrega',
     description: 'Conclusão e liberação.',
   },
 ]
 
-const galleryItems: Array<{
-  title: string
-  label: string
-  image: string
-  icon: LucideIcon
-  className: string
-}> = [
+const galleryItems = [
   {
     title: 'Usinagem de precisão',
-    label: 'USINAGEM',
+    label: 'Usinagem',
     image: assetUrl('assets/gmac-real/componente-usinado.webp'),
-    icon: Cog,
-    className: 'lg:col-span-2 lg:row-span-2',
+    className: 'col-span-2 row-span-2',
   },
   {
     title: 'Medição técnica',
-    label: 'PRECISÃO',
+    label: 'Precisão',
     image: assetUrl('assets/gmac-real/medicao.webp'),
-    icon: Ruler,
     className: '',
   },
   {
     title: 'Acabamento metálico',
-    label: 'ACABAMENTO',
+    label: 'Acabamento',
     image: assetUrl('assets/gmac-real/eixo-usinado.webp'),
-    icon: Target,
     className: '',
   },
   {
     title: 'Caldeiraria industrial',
-    label: 'CALDEIRARIA',
+    label: 'Caldeiraria',
     image: assetUrl('assets/gmac-real/soldagem.webp'),
-    icon: Hammer,
-    className: 'lg:col-span-2',
+    className: 'col-span-2',
   },
   {
     title: 'Tecnologia CNC',
-    label: 'ESTRUTURA',
+    label: 'Estrutura',
     image: assetUrl('assets/gmac-real/torno-cnc.webp'),
-    icon: Zap,
     className: 'lg:col-span-2',
   },
   {
     title: 'Equipe e operação',
-    label: 'EQUIPE',
+    label: 'Equipe',
     image: assetUrl('assets/gmac-real/operacao-torno.webp'),
-    icon: Wrench,
     className: 'lg:col-span-2',
   },
 ]
 
-const qualityItems: Array<{
-  label: string
-  icon: LucideIcon
-}> = [
-  { label: 'EXPERIÊNCIA', icon: Timer },
-  { label: 'PRECISÃO', icon: Gauge },
-  { label: 'COMPROMISSO', icon: Handshake },
-  { label: 'CONTROLE', icon: ScanLine },
-  { label: 'CONFIABILIDADE', icon: ShieldCheck },
-]
-
 const clientLogos = [
-  { src: assetUrl('assets/clientes/belgo-bekaert.png'), alt: 'Belgo Bekaert' },
-  { src: assetUrl('assets/clientes/sapelba.jpg'), alt: 'Sapelba' },
-  { src: assetUrl('assets/clientes/nestle.png'), alt: 'Nestlé' },
-  { src: assetUrl('assets/clientes/placo.png'), alt: 'Placo' },
-  { src: assetUrl('assets/clientes/vipal-borrachas.png'), alt: 'VIPAL Borrachas' },
+  { src: assetUrl('assets/clientes/belgo-bekaert.png'), alt: 'Belgo Bekaert', width: 1875, height: 639 },
+  { src: assetUrl('assets/clientes/sapelba.webp'), alt: 'Sapelba', width: 1011, height: 300 },
+  { src: assetUrl('assets/clientes/nestle.png'), alt: 'Nestlé', width: 3499, height: 944 },
+  { src: assetUrl('assets/clientes/placo.png'), alt: 'Placo', width: 2952, height: 1182 },
+  { src: assetUrl('assets/clientes/vipal-borrachas.png'), alt: 'VIPAL Borrachas', width: 1000, height: 371 },
 ]
 
 const footerLinks = [
@@ -231,13 +207,39 @@ const serviceOptions = [
   'Outro',
 ]
 
+const phoneLabel = '(75) 3616-6626'
+const phoneUrl = 'tel:+557536166626'
+const whatsappUrl =
+  'https://wa.me/557536166626?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20com%20a%20GMAC%20sobre%20um%20projeto.'
+
+// Address, phone and opening hours as published on the company's Google profile.
 const gmacMapsUrl = 'https://maps.app.goo.gl/3bDoAFrJBzZQBZNv7'
 const gmacMapsEmbedUrl =
   'https://www.google.com/maps?q=GMAC%20Metal%C3%BArgica%2C%20Feira%20de%20Santana%20BA&ll=-12.2958308,-38.9613785&z=17&output=embed'
+const businessAddress = ['Av. Banco do Nordeste, 35 - CIS', 'Feira de Santana - BA, 44010-665']
+const businessPlusCode = 'P23Q+JC'
+const businessHours = [
+  { days: 'Segunda a quinta', hours: '07:30 – 17:30' },
+  { days: 'Sexta', hours: '07:30 – 16:30' },
+  { days: 'Sábado e domingo', hours: 'Fechado' },
+]
 
 const acceptedFileExtensions = ['pdf', 'dwg', 'dxf', 'jpg', 'jpeg', 'png']
 const maxFileSize = 10 * 1024 * 1024
 const maxTotalFileSize = 25 * 1024 * 1024
+
+const shell = 'mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10'
+const sectionSpacing = 'py-20 sm:py-24 lg:py-32'
+const sectionTitle =
+  'mt-5 text-balance text-[2rem] font-medium leading-[1.08] tracking-[-0.03em] sm:text-[2.6rem] lg:text-5xl'
+const buttonBase =
+  'inline-flex items-center justify-center gap-2.5 px-6 py-3.5 text-[0.95rem] font-semibold transition-colors'
+const primaryButton = `${buttonBase} brand-corners bg-gmac-orange text-gmac-ink hover:bg-[#ff9147]`
+const lightButton = `${buttonBase} rounded border border-white/30 text-white hover:border-white/70 hover:bg-white/10`
+const darkButton = `${buttonBase} rounded border border-gmac-ink/25 text-gmac-ink hover:border-gmac-ink hover:bg-gmac-ink/5`
+const fieldLabel = 'text-sm font-semibold text-gmac-ink'
+const fieldInput =
+  'mt-2 block w-full border border-slate-300 bg-white px-3.5 py-3 text-base text-gmac-ink outline-none transition placeholder:text-slate-400 focus:border-gmac-ink focus:ring-2 focus:ring-gmac-orange/40'
 
 type QuoteFormState = {
   companyName: string
@@ -305,7 +307,7 @@ function formatFileSize(size: number) {
     return `${Math.max(1, Math.round(size / 1024))} KB`
   }
 
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`
+  return `${(size / (1024 * 1024)).toFixed(1).replace(/\.0$/, '').replace('.', ',')} MB`
 }
 
 function getFileExtension(fileName: string) {
@@ -315,32 +317,25 @@ function getFileExtension(fileName: string) {
 function validateQuoteForm(form: QuoteFormState, files: File[]) {
   const errors: QuoteFormErrors = {}
 
-  if (!form.companyName.trim()) {
-    errors.companyName = 'Informe o nome da empresa.'
-  }
-
-  if (onlyDigits(form.cnpj).length !== 14) {
-    errors.cnpj = 'Informe um CNPJ válido.'
-  }
-
   if (!form.contactName.trim()) {
-    errors.contactName = 'Informe o nome do contato.'
-  }
-
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-    errors.email = 'Informe um e-mail válido.'
+    errors.contactName = 'Informe seu nome.'
   }
 
   if (onlyDigits(form.phone).length < 10) {
-    errors.phone = 'Informe um telefone válido.'
+    errors.phone = 'Informe um telefone com DDD.'
   }
 
-  if (!form.serviceType) {
-    errors.serviceType = 'Selecione o tipo de serviço.'
+  if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(form.email.trim())) {
+    errors.email = 'Informe um e-mail válido.'
   }
 
   if (!form.description.trim()) {
     errors.description = 'Descreva o serviço desejado.'
+  }
+
+  const cnpjDigits = onlyDigits(form.cnpj).length
+  if (cnpjDigits > 0 && cnpjDigits !== 14) {
+    errors.cnpj = 'O CNPJ deve ter 14 dígitos.'
   }
 
   const totalSize = files.reduce((sum, file) => sum + file.size, 0)
@@ -358,6 +353,17 @@ function validateQuoteForm(form: QuoteFormState, files: File[]) {
   }
 
   return errors
+}
+
+// The quote API still requires company, CNPJ and service type. They are optional
+// on the page, so blanks are sent with explicit placeholders the API accepts.
+function toQuotePayload(form: QuoteFormState): QuoteFormState {
+  return {
+    ...form,
+    companyName: form.companyName.trim() || `${form.contactName.trim()} (empresa não informada)`,
+    cnpj: onlyDigits(form.cnpj).length === 14 ? form.cnpj : '00.000.000/0000-00',
+    serviceType: form.serviceType || 'Não informado',
+  }
 }
 
 const container = {
@@ -379,21 +385,55 @@ function useMounted() {
   return mounted
 }
 
-const headerLogoStaticSrc = assetUrl('assets/gmac-logo-final-frame.png')
-
-function HeaderLogo() {
+function Eyebrow({ children, onDark = false }: { children: ReactNode; onDark?: boolean }) {
   return (
-    <span className="relative block h-14 w-[4.65rem] overflow-hidden sm:h-16 sm:w-[5.35rem]">
-      <img
-        src={headerLogoStaticSrc}
-        alt="GMAC Metalúrgica"
-        className="block h-full w-full select-none object-contain"
-        width={1448}
-        height={1086}
-        draggable={false}
-        decoding="async"
-      />
-    </span>
+    <p
+      className={`flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.16em] ${
+        onDark ? 'text-[#f49b52]' : 'text-gmac-ember'
+      }`}
+    >
+      <span aria-hidden="true" className="h-0.5 w-6 flex-none bg-gmac-orange" />
+      {children}
+    </p>
+  )
+}
+
+// Only the content fades in; section backgrounds stay painted while scrolling.
+function Reveal({
+  children,
+  className = '',
+  delay = 0,
+}: {
+  children: ReactNode
+  className?: string
+  delay?: number
+}) {
+  const reduceMotion = useReducedMotion()
+
+  return (
+    <motion.div
+      initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, y: 24 }}
+      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '0px 0px -72px 0px' }}
+      transition={{ duration: 0.6, ease: 'easeOut', delay }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+function LogoBadge({ className }: { className: string }) {
+  return (
+    <img
+      src={assetUrl('assets/logo-gmac-badge.webp')}
+      alt="GMAC Metalúrgica"
+      className={`block select-none ${className}`}
+      width={512}
+      height={512}
+      draggable={false}
+      decoding="async"
+    />
   )
 }
 
@@ -412,27 +452,23 @@ function Header() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+      className={`fixed inset-x-0 top-0 z-50 border-b bg-white/92 backdrop-blur-xl transition-shadow duration-300 ${
         scrolled
-          ? 'border-b border-slate-200/80 bg-[#f8fbfa]/94 shadow-[0_18px_50px_rgba(15,46,69,0.12)] backdrop-blur-xl'
-          : 'border-b border-white/80 bg-[#f8fbfa]/88 shadow-[0_12px_38px_rgba(15,46,69,0.08)] backdrop-blur-xl'
+          ? 'border-slate-200 shadow-[0_10px_30px_rgba(11,24,38,0.08)]'
+          : 'border-transparent'
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8">
-        <a
-          href="#inicio"
-          className="flex items-center gap-3"
-          aria-label="GMAC Metalúrgica - início"
-        >
-          <HeaderLogo />
+      <div className={`${shell} flex h-16 items-center justify-between sm:h-[4.5rem]`}>
+        <a href="#inicio" aria-label="GMAC Metalúrgica - início">
+          <LogoBadge className="h-12 w-12 sm:h-14 sm:w-14" />
         </a>
 
-        <nav className="hidden items-center gap-7 xl:flex" aria-label="Principal">
+        <nav className="hidden items-center gap-8 lg:flex" aria-label="Principal">
           {navItems.map((item) => (
             <a
               key={item.label}
               href={item.href}
-              className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-gmac-ink/68 transition hover:text-gmac-blue"
+              className="text-sm font-medium text-gmac-ink/75 transition-colors hover:text-gmac-ink"
             >
               {item.label}
             </a>
@@ -441,14 +477,14 @@ function Header() {
 
         <a
           href="#orcamento"
-          className="hidden brand-corners whitespace-nowrap bg-gmac-orange px-5 py-3 text-[0.72rem] font-black uppercase tracking-[0.16em] text-white shadow-[0_14px_32px_rgba(244,122,32,0.28)] transition hover:-translate-y-0.5 hover:bg-[#e96514] focus:outline-none focus:ring-2 focus:ring-gmac-orange/30 xl:inline-flex"
+          className="brand-corners hidden items-center justify-center bg-gmac-orange px-5 py-2.5 text-sm font-semibold text-gmac-ink transition-colors hover:bg-[#ff9147] lg:inline-flex"
         >
           Solicitar orçamento
         </a>
 
         <button
           type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-gmac-navy/12 bg-white/76 text-gmac-navy shadow-sm backdrop-blur xl:hidden"
+          className="inline-flex h-11 w-11 items-center justify-center rounded border border-gmac-ink/15 text-gmac-ink lg:hidden"
           onClick={() => setIsOpen((current) => !current)}
           aria-expanded={isOpen}
           aria-label={isOpen ? 'Fechar menu' : 'Abrir menu'}
@@ -464,55 +500,26 @@ function Header() {
           open: { height: 'auto', opacity: 1 },
           closed: { height: 0, opacity: 0 },
         }}
-        className="overflow-hidden border-t border-slate-200/80 bg-white/96 backdrop-blur-xl xl:hidden"
+        className="overflow-hidden border-t border-slate-200 bg-white lg:hidden"
       >
-        <nav className="mx-auto grid max-w-7xl gap-1 px-5 py-4" aria-label="Mobile">
+        <nav className={`${shell} grid gap-1 py-4`} aria-label="Mobile">
           {navItems.map((item) => (
             <a
               key={item.label}
               href={item.href}
               onClick={handleNavigate}
-              className="rounded-md px-2 py-3 text-sm font-bold uppercase tracking-[0.16em] text-gmac-ink/72 transition hover:bg-gmac-steel/70 hover:text-gmac-blue"
+              className="rounded px-2 py-3 text-base font-medium text-gmac-ink/80 transition-colors hover:bg-gmac-paper hover:text-gmac-ink"
             >
               {item.label}
             </a>
           ))}
-          <a
-            href="#orcamento"
-            onClick={handleNavigate}
-            className="mt-2 inline-flex items-center justify-center gap-2 rounded-md bg-gmac-orange px-4 py-3 text-sm font-black uppercase tracking-[0.14em] text-white shadow-[0_14px_28px_rgba(244,122,32,0.22)]"
-          >
+          <a href="#orcamento" onClick={handleNavigate} className={`${primaryButton} mt-3`}>
             Solicitar orçamento
-            <ArrowRight size={17} />
+            <ArrowRight size={18} />
           </a>
         </nav>
       </motion.div>
     </header>
-  )
-}
-
-function AnimatedSection({
-  children,
-  className = '',
-  id,
-}: {
-  children: React.ReactNode
-  className?: string
-  id?: string
-}) {
-  const reduceMotion = useReducedMotion()
-
-  return (
-    <motion.section
-      id={id}
-      initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, y: 38 }}
-      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.18 }}
-      transition={{ duration: 0.75, ease: 'easeOut' }}
-      className={className}
-    >
-      {children}
-    </motion.section>
   )
 }
 
@@ -539,51 +546,11 @@ function HashScrollHandler() {
   return null
 }
 
-function CountUp({ value, suffix = '' }: { value: number; suffix?: string }) {
-  const ref = useRef<HTMLSpanElement>(null)
-  const isInView = useInView(ref, { once: true, amount: 0.6 })
-  const reduceMotion = useReducedMotion()
-  const [count, setCount] = useState(import.meta.env.SSR ? value : 0)
-
-  useEffect(() => {
-    if (!isInView) return
-
-    if (reduceMotion) {
-      setCount(value)
-      return
-    }
-
-    let frame = 0
-    const duration = 1100
-    const start = performance.now()
-
-    const animate = (time: number) => {
-      const progress = Math.min((time - start) / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setCount(Math.round(eased * value))
-
-      if (progress < 1) {
-        frame = requestAnimationFrame(animate)
-      }
-    }
-
-    frame = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(frame)
-  }, [isInView, reduceMotion, value])
-
-  return (
-    <span ref={ref}>
-      {count}
-      {suffix}
-    </span>
-  )
-}
-
 function Hero() {
   const mounted = useMounted()
   const reduceMotion = useReducedMotion()
   const { scrollY } = useScroll()
-  const imageY = useTransform(scrollY, [0, 700], reduceMotion ? [0, 0] : [0, 76])
+  const imageY = useTransform(scrollY, [0, 700], reduceMotion ? [0, 0] : [0, 60])
 
   const item = useMemo(
     () => ({
@@ -600,48 +567,45 @@ function Hero() {
   return (
     <section
       id="inicio"
-      className="relative isolate min-h-[100svh] overflow-hidden bg-[#0c1d2b] text-white"
+      className="relative isolate overflow-hidden bg-gmac-deep text-white"
     >
       <motion.img
-        src={assetUrl('assets/gmac-real/hero-soldagem.jpeg')}
+        src={assetUrl('assets/gmac-real/hero-soldagem-1440.webp')}
+        srcSet={[1440, 1920, 2880]
+          .map((width) => `${assetUrl(`assets/gmac-real/hero-soldagem-${width}.webp`)} ${width}w`)
+          .join(', ')}
+        sizes="(max-width: 640px) 640px, (max-aspect-ratio: 4/3) 150vh, 100vw"
         alt="Profissional da GMAC realizando soldagem de uma peça metálica na oficina"
+        width={2880}
+        height={2160}
+        fetchPriority="high"
         style={{ y: mounted ? imageY : 0 }}
-        className="absolute inset-0 h-[105%] w-full object-cover brightness-[0.96] saturate-[1.12] sm:h-[112%] lg:h-[115%]"
+        className="absolute inset-0 h-[110%] w-full object-cover object-[66%_center]"
       />
-      <div className="absolute inset-0 bg-[linear-gradient(105deg,rgba(6,22,31,0.80)_0%,rgba(9,42,51,0.58)_43%,rgba(14,76,83,0.18)_73%,rgba(7,26,36,0.46)_100%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,18,28,0.02)_0%,rgba(6,18,28,0.58)_100%)]" />
-      <div className="ambient-sweep absolute inset-y-0 left-0 w-[76%]" />
-      <div className="industrial-grid absolute inset-0 opacity-24" />
-      <div className="absolute -left-28 top-24 hidden h-72 w-72 rotate-45 border border-white/8 opacity-50 sm:block" />
-      <div className="absolute right-[7%] top-28 hidden h-24 w-24 rotate-45 border-8 border-gmac-orange/45 opacity-70 md:block" />
-      <div className="absolute bottom-14 right-8 hidden h-40 w-40 rotate-45 border border-gmac-cyan/20 sm:block" />
+      <div className="hero-shade absolute inset-0" />
 
-      <div className="relative mx-auto flex min-h-[100svh] max-w-7xl items-center px-4 pb-12 pt-24 sm:px-6 sm:pb-20 sm:pt-32 lg:px-8">
+      <div
+        className={`${shell} relative flex min-h-[100svh] flex-col justify-end pb-8 pt-28 sm:pb-12 sm:pt-36`}
+      >
         <motion.div
           variants={container}
           initial={import.meta.env.SSR || reduceMotion ? false : 'hidden'}
           animate="visible"
-          className="max-w-6xl"
         >
-          <motion.div
-            variants={item}
-            className="mb-5 inline-flex max-w-full flex-wrap items-center gap-3 rounded-md border border-white/16 bg-white/10 px-3 py-2 text-[0.62rem] font-bold uppercase tracking-[0.1em] text-white/90 shadow-[0_16px_36px_rgba(0,0,0,0.12)] backdrop-blur sm:mb-6 sm:px-4 sm:text-xs sm:tracking-[0.2em]"
-          >
-            <span className="h-2 w-2 bg-gmac-orange" />
-            <span>GMAC Metalúrgica em Feira de Santana - BA</span>
+          <motion.div variants={item}>
+            <Eyebrow onDark>Feira de Santana · Bahia</Eyebrow>
           </motion.div>
 
           <motion.h1
             variants={item}
-            className="hero-title max-w-6xl text-balance text-[2.2rem] font-black leading-[1.04] tracking-normal text-white min-[390px]:text-[2.55rem] sm:text-6xl lg:text-[4.35rem] xl:text-[5.1rem]"
+            className="mt-6 max-w-4xl text-balance text-[2.5rem] font-medium leading-[1.04] tracking-[-0.035em] min-[400px]:text-[2.85rem] sm:text-6xl lg:text-7xl"
           >
-            <span className="block xl:whitespace-nowrap">PRECISÃO QUE TRANSFORMA</span>
-            <span className="block xl:whitespace-nowrap">METAL EM SOLUÇÕES.</span>
+            Precisão que transforma metal em soluções.
           </motion.h1>
 
           <motion.p
             variants={item}
-            className="mt-5 max-w-2xl text-base font-semibold leading-7 text-white/92 sm:mt-7 sm:text-xl sm:leading-8"
+            className="mt-6 max-w-xl text-base leading-7 text-white/80 sm:text-lg sm:leading-8"
           >
             GMAC Metalúrgica: usinagem, caldeiraria e manutenção industrial
             em Feira de Santana, Bahia. Precisão e compromisso com cada projeto.
@@ -649,541 +613,219 @@ function Hero() {
 
           <motion.div
             variants={item}
-            className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:items-center"
+            className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center"
           >
-            <a
-              href="#orcamento"
-              className="brand-corners inline-flex w-full items-center justify-center gap-3 bg-gmac-orange px-4 py-3 text-xs font-black uppercase tracking-[0.1em] text-white shadow-[0_18px_38px_rgba(244,122,32,0.28)] transition hover:-translate-y-0.5 hover:bg-[#e96514] focus:outline-none focus:ring-2 focus:ring-white sm:w-auto sm:px-6 sm:py-4 sm:text-sm sm:tracking-[0.14em]"
-            >
+            <a href="#orcamento" className={primaryButton}>
               Solicitar orçamento
               <ArrowRight size={18} />
             </a>
-            <a
-              href="#gmac"
-              className="inline-flex w-full items-center justify-center gap-3 rounded-md border border-white/20 bg-white/10 px-4 py-3 text-xs font-black uppercase tracking-[0.1em] text-white shadow-[0_14px_34px_rgba(0,0,0,0.14)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/16 focus:outline-none focus:ring-2 focus:ring-white/70 sm:w-auto sm:px-6 sm:py-4 sm:text-sm sm:tracking-[0.14em]"
-            >
+            <a href="#gmac" className={lightButton}>
               Conheça a GMAC
             </a>
           </motion.div>
 
-          <motion.div
+          <motion.ul
             variants={item}
-            className="mt-8 grid max-w-3xl gap-3 sm:mt-12 sm:grid-cols-[0.8fr_1.2fr]"
+            className="mt-12 grid max-w-3xl grid-cols-3 gap-4 border-t border-white/15 pt-6 sm:mt-16 sm:gap-10 sm:pt-8"
           >
-            <div className="rounded-md border border-white/14 bg-white/10 px-5 py-4 shadow-[0_16px_34px_rgba(0,0,0,0.12)] backdrop-blur">
-              <p className="text-3xl font-black leading-none text-white">18</p>
-              <p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-white/70">
-                Anos de experiência
-              </p>
-            </div>
-            <div className="rounded-md border border-white/14 bg-white/10 px-5 py-4 shadow-[0_16px_34px_rgba(0,0,0,0.12)] backdrop-blur">
-              <p className="text-sm font-black uppercase tracking-[0.12em] text-white sm:text-base sm:tracking-[0.18em]">
-                Usinagem - Caldeiraria - Manutenção industrial
-              </p>
-            </div>
-          </motion.div>
+            {heroFacts.map((fact) => (
+              <li key={fact.label}>
+                <p className="text-2xl font-medium tracking-[-0.03em] sm:text-4xl">
+                  {fact.value}
+                </p>
+                <p className="mt-1.5 text-xs leading-5 text-white/65 sm:text-sm">
+                  {fact.label}
+                </p>
+              </li>
+            ))}
+          </motion.ul>
         </motion.div>
       </div>
-
-      <a
-        href="#gmac"
-        className="absolute bottom-7 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-white/58 transition hover:text-white md:flex"
-        aria-label="Ir para a seção A GMAC"
-      >
-        <span>Scroll</span>
-        <motion.span
-          animate={reduceMotion ? undefined : { y: [0, 8, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-          className="flex h-10 w-6 items-start justify-center border border-white/24 p-1"
-        >
-          <ArrowDown size={14} />
-        </motion.span>
-      </a>
     </section>
   )
 }
 
 function About() {
-  const reduceMotion = useReducedMotion()
-  const metricItem = {
-    hidden: { opacity: 0, y: reduceMotion ? 0 : 22 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.65 },
-    },
-  }
-
   return (
-    <AnimatedSection
-      id="gmac"
-      className="relative overflow-hidden bg-[linear-gradient(180deg,#f6fbfd_0%,#ffffff_48%,#eef6f9_100%)] px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28 xl:py-32"
-    >
-      <div className="fluid-grid absolute inset-0 opacity-45" />
-      <div className="absolute left-0 top-0 hidden h-full w-1/3 bg-white/45 xl:block" />
-      <div className="absolute -right-16 top-20 hidden h-44 w-44 rotate-45 border-[18px] border-gmac-orange/8 sm:block" />
-      <div className="relative mx-auto grid max-w-7xl gap-10 xl:grid-cols-[0.95fr_1.05fr] xl:items-center">
-        <div>
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-gmac-orange">
-            A GMAC
-          </p>
-          <h2 className="mt-5 max-w-2xl text-balance text-3xl font-black leading-tight tracking-normal text-gmac-ink sm:text-4xl lg:text-5xl">
-            GMAC METALÚRGICA EM FEIRA DE SANTANA
+    <section id="gmac" className={`bg-gmac-paper ${sectionSpacing}`}>
+      <div className={`${shell} grid gap-12 lg:grid-cols-[1fr_0.95fr] lg:gap-20`}>
+        <Reveal>
+          <Eyebrow>A GMAC</Eyebrow>
+          <h2 className={`${sectionTitle} text-gmac-ink`}>
+            GMAC Metalúrgica em Feira de Santana
           </h2>
-          <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:mt-7 sm:text-lg sm:leading-8">
+          <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
             A GMAC Metalúrgica, em Feira de Santana - BA, atua com usinagem de
             peças, caldeiraria e manutenção industrial. Unimos experiência
             técnica, capacidade produtiva e compromisso com a execução dos serviços.
           </p>
 
-          <motion.div
-            variants={container}
-            initial={import.meta.env.SSR || reduceMotion ? false : 'hidden'}
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-3"
-          >
-            <motion.div
-              variants={metricItem}
-              className="rounded-lg border border-slate-200/70 bg-white/90 p-4 shadow-[0_18px_42px_rgba(16,47,70,0.09)] transition hover:-translate-y-1 hover:border-gmac-cyan/45 hover:shadow-[0_24px_54px_rgba(16,47,70,0.13)] sm:p-5"
-            >
-              <p className="text-4xl font-black text-gmac-navy">
-                <CountUp value={18} suffix="+" />
-              </p>
-              <p className="mt-2 text-xs font-black uppercase tracking-[0.16em] text-slate-400">
-                Anos
-              </p>
-              <p className="mt-3 text-sm font-semibold text-slate-600">
-                de experiência
-              </p>
-            </motion.div>
-            <motion.div
-              variants={metricItem}
-              className="rounded-lg border border-slate-200/70 bg-white/90 p-4 shadow-[0_18px_42px_rgba(16,47,70,0.09)] transition hover:-translate-y-1 hover:border-gmac-cyan/45 hover:shadow-[0_24px_54px_rgba(16,47,70,0.13)] sm:p-5"
-            >
-              <p className="text-xl font-black uppercase tracking-[0.08em] text-gmac-navy">
-                Precisão
-              </p>
-              <p className="mt-5 h-1 w-14 bg-gmac-orange" />
-              <p className="mt-4 text-sm font-semibold text-slate-600">
-                em cada etapa
-              </p>
-            </motion.div>
-            <motion.div
-              variants={metricItem}
-              className="rounded-lg border border-slate-200/70 bg-white/90 p-4 shadow-[0_18px_42px_rgba(16,47,70,0.09)] transition hover:-translate-y-1 hover:border-gmac-cyan/45 hover:shadow-[0_24px_54px_rgba(16,47,70,0.13)] sm:p-5"
-            >
-              <p className="text-xl font-black uppercase tracking-[0.08em] text-gmac-navy">
-                Soluções industriais
-              </p>
-              <p className="mt-5 h-1 w-14 bg-gmac-cyan" />
-              <p className="mt-4 text-sm font-semibold text-slate-600">
-                sob medida
-              </p>
-            </motion.div>
-          </motion.div>
-        </div>
-
-        <motion.div
-          initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, scale: 0.97 }}
-          whileInView={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
-          viewport={{ once: true, amount: 0.25 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="relative"
-        >
-          <div className="absolute -left-5 -top-5 hidden h-28 w-28 rounded-lg border-[12px] border-gmac-orange/70 sm:block" />
-          <div className="absolute -bottom-5 -right-5 hidden h-28 w-28 rounded-lg border-[12px] border-gmac-cyan/45 sm:block" />
-          <div className="relative overflow-hidden rounded-lg border border-white bg-gmac-ink shadow-[0_28px_70px_rgba(16,47,70,0.18)]">
-            <img
-              src={assetUrl('assets/gmac-real/equipe-oficina.webp')}
-              loading="lazy" decoding="async"
-              alt="Equipe GMAC trabalhando em máquina na oficina"
-              className="aspect-[4/3] w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-tr from-gmac-navy/62 via-transparent to-gmac-orange/14" />
-            <div className="absolute bottom-0 left-0 right-0 border-t border-white/12 bg-gmac-navy/68 p-5 backdrop-blur-md">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-gmac-orange">
-                Capacidade produtiva
-              </p>
-              <p className="mt-2 text-lg font-bold text-white">
-                Soluções técnicas para demandas industriais.
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </AnimatedSection>
-  )
-}
-
-function RoundLogoCarousel({
-  images,
-  imageWidth = 250,
-  imageHeight = 156,
-  spacing = 2.6,
-  speed = 2,
-  direction = 'right',
-  drag = true,
-  sensitivity = 4,
-  tilt = -7,
-  perspective = 2600,
-  cornerRadius = 8,
-  innerDim = 7,
-}: {
-  images: typeof clientLogos
-  imageWidth?: number
-  imageHeight?: number
-  spacing?: number
-  speed?: number
-  direction?: 'right' | 'left'
-  drag?: boolean
-  sensitivity?: number
-  tilt?: number
-  perspective?: number
-  cornerRadius?: number
-  innerDim?: number
-}) {
-  const reduceMotion = useReducedMotion()
-  const hostRef = useRef<HTMLDivElement>(null)
-  const ringRef = useRef<HTMLDivElement>(null)
-  const rafRef = useRef<number | null>(null)
-  const rotYRef = useRef(0)
-  const velRef = useRef(0)
-  const lastRef = useRef(0)
-  const dragRef = useRef({ active: false, x: 0 })
-  const [size, setSize] = useState({ width: imageWidth, height: imageHeight })
-
-  const items = images.length > 0 ? images : clientLogos
-  const count = items.length
-  const angle = 360 / count
-  const factor = 1 + spacing * 0.15
-  const radius = (size.width * factor) / (2 * Math.tan(Math.PI / count))
-  const degPerSec = speed * 6 * (direction === 'left' ? -1 : 1)
-  const faceBase: React.CSSProperties = {
-    position: 'absolute',
-    inset: 0,
-    borderRadius: cornerRadius,
-    overflow: 'hidden',
-    backfaceVisibility: 'hidden',
-  }
-
-  const applyRingTransform = () => {
-    const ring = ringRef.current
-    if (!ring) return
-    ring.style.transform = `translateZ(${-radius}px) rotateY(${rotYRef.current}deg)`
-  }
-
-  useEffect(() => {
-    const host = hostRef.current
-    if (!host) return
-
-    const measure = () => {
-      const nextWidth = Math.min(imageWidth, Math.max(154, Math.round(host.clientWidth * 0.46)))
-      const nextHeight = Math.round(nextWidth * (imageHeight / imageWidth))
-      setSize((current) =>
-        current.width === nextWidth && current.height === nextHeight
-          ? current
-          : { width: nextWidth, height: nextHeight },
-      )
-    }
-
-    measure()
-    const observer = new ResizeObserver(measure)
-    observer.observe(host)
-    return () => observer.disconnect()
-  }, [imageHeight, imageWidth])
-
-  useEffect(() => {
-    const ring = ringRef.current
-    if (!ring) return
-
-    lastRef.current = 0
-    applyRingTransform()
-
-    if (reduceMotion) return
-
-    const draw = (now: number) => {
-      const dt = lastRef.current ? (now - lastRef.current) / 1000 : 0
-      lastRef.current = now
-      const frameDelta = Math.min(dt, 0.1)
-
-      if (!dragRef.current.active) {
-        if (Math.abs(velRef.current) > 0.01) {
-          rotYRef.current += velRef.current * frameDelta
-          velRef.current *= 0.94
-        } else {
-          rotYRef.current += degPerSec * frameDelta
-        }
-      }
-
-      applyRingTransform()
-      rafRef.current = requestAnimationFrame(draw)
-    }
-
-    rafRef.current = requestAnimationFrame(draw)
-    return () => {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current)
-      }
-    }
-  }, [degPerSec, radius, reduceMotion])
-
-  const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!drag) return
-
-    event.currentTarget.setPointerCapture?.(event.pointerId)
-    dragRef.current = { active: true, x: event.clientX }
-    velRef.current = 0
-  }
-
-  const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragRef.current.active) return
-
-    const dx = event.clientX - dragRef.current.x
-    dragRef.current.x = event.clientX
-    const strength = 0.3 * sensitivity
-    rotYRef.current += dx * strength
-    velRef.current = dx * strength * 60
-    applyRingTransform()
-  }
-
-  const onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId)
-    }
-    dragRef.current.active = false
-  }
-
-  return (
-    <div
-      ref={hostRef}
-      className="relative h-full min-h-[230px] w-full touch-none overflow-hidden sm:min-h-[270px] lg:min-h-[300px]"
-      style={{
-        cursor: drag ? 'grab' : 'default',
-        perspective: `${perspective}px`,
-      }}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
-      aria-label="Carrossel de logos dos principais clientes"
-    >
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div
-          style={{
-            transform: `rotateX(${tilt}deg)`,
-            transformStyle: 'preserve-3d',
-          }}
-        >
-          <div
-            ref={ringRef}
-            style={{
-              height: size.height,
-              position: 'relative',
-              transformStyle: 'preserve-3d',
-              width: size.width,
-            }}
-          >
-            {items.map((logo, index) => (
+          <h3 className="mt-12 text-lg font-semibold tracking-[-0.015em] text-gmac-ink">
+            Precisão em cada detalhe
+          </h3>
+          <dl className="mt-4 border-t border-slate-300">
+            {commitments.map((commitment) => (
               <div
-                key={logo.src}
-                style={{
-                  inset: 0,
-                  position: 'absolute',
-                  transform: `rotateY(${index * angle}deg) translateZ(${radius}px)`,
-                  transformStyle: 'preserve-3d',
-                }}
+                key={commitment.term}
+                className="grid gap-1 border-b border-slate-300 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6"
               >
-                <div
-                  className="flex h-full w-full items-center justify-center border border-slate-200/80 bg-white p-5 shadow-[0_20px_52px_rgba(16,47,70,0.18)] sm:p-7"
-                  style={faceBase}
-                >
-                  <img
-                    src={logo.src}
-                    alt={logo.alt}
-                    className="h-full w-full select-none object-contain"
-                    draggable={false}
-                    loading="lazy"
-                  />
-                </div>
-                <div
-                  aria-hidden="true"
-                  className="flex h-full w-full items-center justify-center border border-slate-200/80 bg-gmac-steel p-5 shadow-xl shadow-slate-950/10 sm:p-7"
-                  style={{
-                    ...faceBase,
-                    filter: `brightness(${innerDim / 10})`,
-                    transform: 'rotateY(180deg)',
-                  }}
-                >
-                  <img
-                    src={logo.src}
-                    alt=""
-                    className="h-full w-full select-none object-contain"
-                    draggable={false}
-                    loading="lazy"
-                  />
-                </div>
+                <dt className="text-sm font-semibold text-gmac-ink">
+                  {commitment.term}
+                </dt>
+                <dd className="text-sm leading-6 text-slate-600">
+                  {commitment.detail}
+                </dd>
               </div>
             ))}
-          </div>
-        </div>
+          </dl>
+        </Reveal>
+
+        <Reveal delay={0.1}>
+          <figure className="lg:sticky lg:top-28">
+            <img
+              src={assetUrl('assets/gmac-real/equipe-oficina.webp')}
+              loading="lazy"
+              decoding="async"
+              width={1280}
+              height={960}
+              alt="Equipe GMAC trabalhando em máquina na oficina"
+              className="aspect-[4/3] w-full rounded object-cover"
+            />
+            <figcaption className="mt-4 text-sm leading-6 text-slate-500">
+              Capacidade produtiva: soluções técnicas para demandas industriais.
+            </figcaption>
+          </figure>
+        </Reveal>
       </div>
-    </div>
+    </section>
   )
 }
 
 function Clients() {
-  const reduceMotion = useReducedMotion()
-
   return (
-    <AnimatedSection
-      id="clientes"
-      className="relative overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#f2f8fb_100%)] px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28 xl:py-32"
-    >
-      <div className="fluid-grid absolute inset-0 opacity-55" />
-      <div className="absolute -right-12 top-16 hidden h-40 w-40 rotate-45 border-[14px] border-gmac-orange/8 sm:block" />
-      <div className="absolute bottom-10 left-10 hidden h-28 w-28 rotate-45 border border-gmac-blue/12 md:block" />
-
-      <div className="relative mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
-        <motion.div
-          initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, x: -24 }}
-          whileInView={reduceMotion ? undefined : { opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.35 }}
-          transition={{ duration: 0.7, ease: 'easeOut' }}
-          className="max-w-2xl"
-        >
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-gmac-orange">
-            Principais clientes
-          </p>
-          <h2 className="mt-5 text-balance text-3xl font-black leading-tight tracking-normal text-gmac-ink sm:text-4xl lg:text-5xl">
-            MARCAS PRESENTES NA TRAJETÓRIA DA GMAC.
-          </h2>
-          <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:mt-7 sm:text-lg sm:leading-8">
+    <section id="clientes" className="border-y border-slate-200 bg-white py-16 sm:py-20">
+      <div className={shell}>
+        <Reveal className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <Eyebrow>Principais clientes</Eyebrow>
+            <h2 className="mt-5 max-w-xl text-balance text-2xl font-medium leading-tight tracking-[-0.025em] text-gmac-ink sm:text-3xl">
+              Marcas presentes na trajetória da GMAC.
+            </h2>
+          </div>
+          <p className="max-w-sm text-base leading-7 text-slate-600">
             Algumas das marcas atendidas pela GMAC Metalúrgica em demandas
             industriais.
           </p>
-        </motion.div>
+        </Reveal>
 
-        <motion.div
-          initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, scale: 0.96 }}
-          whileInView={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
-          viewport={{ once: true, amount: 0.25 }}
-          transition={{ duration: 0.75, ease: 'easeOut' }}
-          className="relative min-h-[230px] overflow-hidden sm:min-h-[270px] lg:min-h-[300px]"
-        >
-          <div className="relative h-full">
-            <RoundLogoCarousel images={clientLogos} />
-          </div>
-        </motion.div>
+        <Reveal delay={0.1}>
+          <ul className="mt-10 flex flex-wrap items-center justify-center gap-x-12 gap-y-9 border-t border-slate-200 pt-10 sm:gap-x-16 lg:justify-between">
+            {clientLogos.map((logo) => (
+              <li key={logo.alt}>
+                <img
+                  src={logo.src}
+                  alt={logo.alt}
+                  width={logo.width}
+                  height={logo.height}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-9 w-auto select-none sm:h-11"
+                  draggable={false}
+                />
+              </li>
+            ))}
+          </ul>
+        </Reveal>
       </div>
-    </AnimatedSection>
+    </section>
   )
 }
 
 function ServiceCard({
   service,
   index,
+  onRequestQuote,
 }: {
   service: (typeof services)[number]
   index: number
+  onRequestQuote: (option: string) => void
 }) {
-  const Icon = service.icon
   const reduceMotion = useReducedMotion()
+  const featured = index < 2
+  const last = index === services.length - 1
 
   return (
     <motion.article
-      variants={{
-        hidden: { opacity: 0, y: 34 },
-        visible: {
-          opacity: 1,
-          y: 0,
-          transition: { duration: 0.65, delay: index * 0.03 },
-        },
-      }}
-      whileHover={reduceMotion ? undefined : { y: -8 }}
-      className="group relative overflow-hidden rounded-lg border border-white/12 bg-[#143248] shadow-[0_24px_62px_rgba(2,8,16,0.26)]"
+      initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, y: 24 }}
+      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.6, ease: 'easeOut', delay: (index % 3) * 0.06 }}
+      className={`group flex flex-col overflow-hidden rounded border border-white/10 bg-white/[0.04] ${
+        featured ? 'lg:col-span-3' : 'lg:col-span-2'
+      } ${last ? 'md:col-span-2' : ''}`}
     >
-      <div className="pointer-events-none absolute inset-x-4 top-0 z-10 h-px bg-gradient-to-r from-transparent via-gmac-cyan/80 to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
-      <div className="relative overflow-hidden">
+      <div className="overflow-hidden">
         <img
           src={service.image}
           alt={service.imageAlt}
-          loading="lazy" decoding="async"
-          className="aspect-[16/10] w-full object-cover transition duration-700 group-hover:scale-105"
+          loading="lazy"
+          decoding="async"
+          className={`w-full object-cover transition duration-700 group-hover:scale-105 ${
+            featured ? 'aspect-[16/10] lg:aspect-[16/9]' : 'aspect-[16/10]'
+          } ${last ? 'md:aspect-[21/9] lg:aspect-[16/10]' : ''}`}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-gmac-ink/78 via-gmac-ink/8 to-transparent" />
-        <div className="absolute left-5 top-5 flex h-12 w-12 items-center justify-center rounded-md border border-white/18 bg-white/12 text-gmac-orange backdrop-blur">
-          <Icon size={23} strokeWidth={2.2} />
-        </div>
       </div>
 
-      <div className="relative bg-[linear-gradient(180deg,rgba(255,255,255,0.075),rgba(255,255,255,0.035))] p-5 sm:p-6">
-        <div className="mb-4 flex items-center gap-3">
-          <span className="h-px w-10 bg-gmac-orange transition-all duration-300 group-hover:w-16" />
-          <span className="text-xs font-black uppercase tracking-[0.18em] text-white/42">
-            Serviço
-          </span>
-        </div>
-        <h3 className="text-xl font-black tracking-normal text-white sm:text-2xl">
+      <div className="flex flex-1 flex-col p-6 sm:p-7">
+        <h3 className="text-xl font-semibold tracking-[-0.015em] text-white">
           {service.title}
         </h3>
-        <p className="mt-3 text-sm leading-6 text-slate-300 sm:mt-4 sm:min-h-20 sm:text-[0.98rem] sm:leading-7">
+        <p className="mt-2 text-[0.95rem] leading-7 text-white/65">
           {service.description}
         </p>
         <a
           href="#orcamento"
-          className="mt-6 inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.14em] text-gmac-orange transition group-hover:gap-3 group-hover:text-orange-300"
+          onClick={() => onRequestQuote(service.quoteOption)}
+          aria-label={`Solicitar orçamento de ${service.title.toLowerCase()}`}
+          className="mt-auto inline-flex items-center gap-2 self-start pt-6 text-sm font-semibold text-gmac-orange transition-colors hover:text-[#ffa25f]"
         >
-          Saiba mais
-          <ArrowRight size={17} />
+          Solicitar orçamento
+          <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
         </a>
       </div>
     </motion.article>
   )
 }
 
-function Services() {
-  const reduceMotion = useReducedMotion()
-
+function Services({ onRequestQuote }: { onRequestQuote: (option: string) => void }) {
   return (
-    <AnimatedSection
-      id="servicos"
-      className="relative overflow-hidden bg-[linear-gradient(135deg,#102f46_0%,#17455a_48%,#0d2233_100%)] px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-8 lg:py-28 xl:py-32"
-    >
-      <div className="industrial-grid absolute inset-0 opacity-28" />
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gmac-orange/70 to-transparent" />
-      <div className="absolute left-8 top-16 hidden h-36 w-36 rotate-45 border border-white/8 sm:block" />
-      <div className="absolute bottom-20 right-10 hidden h-56 w-56 rotate-45 border-[18px] border-gmac-orange/8 md:block" />
-
-      <div className="relative mx-auto max-w-7xl">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+    <section id="servicos" className={`bg-gmac-navy text-white ${sectionSpacing}`}>
+      <div className={shell}>
+        <Reveal className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-gmac-orange">
-              Serviços
-            </p>
-            <h2 className="mt-5 max-w-3xl text-balance text-3xl font-black leading-tight tracking-normal sm:text-4xl lg:text-5xl">
-              USINAGEM, CALDEIRARIA E MANUTENÇÃO INDUSTRIAL
+            <Eyebrow onDark>Serviços</Eyebrow>
+            <h2 className={`${sectionTitle} max-w-3xl`}>
+              Usinagem, caldeiraria e manutenção industrial
             </h2>
           </div>
-          <p className="max-w-md text-base leading-7 text-slate-300">
+          <p className="max-w-md text-base leading-7 text-white/70">
             Componentes, estruturas e suporte técnico para operações industriais
             que exigem precisão e continuidade.
           </p>
-        </div>
+        </Reveal>
 
-        <motion.div
-          variants={container}
-          initial={import.meta.env.SSR || reduceMotion ? false : 'hidden'}
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.14 }}
-          className="mt-9 grid gap-4 sm:mt-12 md:grid-cols-2 xl:grid-cols-3"
-        >
+        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-6">
           {services.map((service, index) => (
-            <ServiceCard key={service.title} service={service} index={index} />
+            <ServiceCard
+              key={service.title}
+              service={service}
+              index={index}
+              onRequestQuote={onRequestQuote}
+            />
           ))}
-        </motion.div>
+        </div>
       </div>
-    </AnimatedSection>
+    </section>
   )
 }
 
@@ -1191,241 +833,95 @@ function ProcessTimeline() {
   const reduceMotion = useReducedMotion()
 
   return (
-    <AnimatedSection
-      id="processo"
-      className="relative overflow-hidden bg-[linear-gradient(135deg,#123149_0%,#18455b_52%,#10283c_100%)] px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-8 lg:py-28 xl:py-32"
-    >
-      <div className="industrial-grid absolute inset-0 opacity-24" />
-      <div className="absolute -left-14 top-16 hidden h-44 w-44 rotate-45 border-[18px] border-gmac-orange/8 sm:block" />
-      <div className="absolute bottom-14 right-16 hidden h-36 w-36 rotate-45 border border-gmac-cyan/18 sm:block" />
-
-      <div className="relative mx-auto max-w-7xl">
-        <div className="max-w-4xl">
-          <div className="mb-6 inline-flex items-center gap-3 rounded-md border border-white/12 bg-white/[0.08] px-4 py-2">
-            <Workflow size={18} className="text-gmac-orange" />
-            <span className="text-xs font-black uppercase tracking-[0.2em] text-white/66">
-              Processo
-            </span>
-          </div>
-          <h2 className="text-balance text-3xl font-black leading-tight tracking-normal sm:text-4xl lg:text-5xl">
-            DO PRIMEIRO CONTATO À ENTREGA
+    <section id="processo" className={`bg-white ${sectionSpacing}`}>
+      <div className={shell}>
+        <Reveal className="max-w-3xl">
+          <Eyebrow>Processo</Eyebrow>
+          <h2 className={`${sectionTitle} text-gmac-ink`}>
+            Do primeiro contato à entrega
           </h2>
-          <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 sm:mt-7 sm:text-lg sm:leading-8">
+          <p className="mt-6 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
             Cada etapa organiza a solicitação para dar clareza ao orçamento,
             à produção, à inspeção e à entrega final.
           </p>
-        </div>
+        </Reveal>
 
-        <div className="mt-9 rounded-lg border border-white/12 bg-[#123149] p-4 shadow-[0_26px_70px_rgba(2,8,16,0.24)] sm:mt-12 sm:p-6">
-          <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4 sm:mb-6">
-            <span className="text-xs font-black uppercase tracking-[0.18em] text-gmac-orange">
-              Fluxo do atendimento
-            </span>
-            <span className="h-2 w-2 bg-gmac-cyan" />
-          </div>
-
-          <div className="relative hidden xl:block">
-            <div className="absolute left-8 right-8 top-7 h-px bg-white/14" />
-            <motion.div
-              initial={import.meta.env.SSR || reduceMotion ? false : { scaleX: 0 }}
-              whileInView={reduceMotion ? undefined : { scaleX: 1 }}
+        <ol className="mt-14 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+          {processSteps.map((step, index) => (
+            <motion.li
+              key={step.number}
+              initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, y: 20 }}
+              whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.4 }}
-              transition={{ duration: 1.1 }}
-              className="absolute left-8 right-8 top-7 h-px origin-left bg-gmac-orange"
-            />
-
-            <ol className="grid grid-cols-7 gap-4">
-              {processSteps.map((step, index) => (
-                <motion.li
-                  key={step.number}
-                  initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, y: 26 }}
-                  whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.45 }}
-                  transition={{ duration: 0.58, delay: index * 0.08 }}
-                  className="relative"
-                >
-                  <div className="relative z-10 mb-6 flex h-14 w-14 items-center justify-center rounded-md border-4 border-[#123149] bg-gmac-orange text-sm font-black text-white shadow-xl shadow-black/20">
-                    {step.number}
-                  </div>
-                  <div className="h-48 rounded-lg border border-white/12 bg-[#1a4056] p-5 shadow-[0_18px_42px_rgba(2,8,16,0.18)]">
-                    <h3 className="text-base font-black tracking-normal text-white">
-                      {step.title}
-                    </h3>
-                    <p className="mt-4 text-sm leading-6 text-slate-300">
-                      {step.description}
-                    </p>
-                  </div>
-                </motion.li>
-              ))}
-            </ol>
-          </div>
-
-          <ol className="relative grid gap-4 xl:hidden">
-            <div className="absolute bottom-8 left-6 top-8 w-px bg-white/14" />
-            {processSteps.map((step, index) => (
-              <motion.li
-                key={step.number}
-                initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, x: -20 }}
-                whileInView={reduceMotion ? undefined : { opacity: 1, x: 0 }}
-                viewport={{ once: true, amount: 0.4 }}
-                transition={{ duration: 0.55, delay: index * 0.05 }}
-                className="relative grid grid-cols-[2.5rem_1fr] gap-3 sm:grid-cols-[3rem_1fr] sm:gap-4"
-              >
-                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-md bg-gmac-orange text-xs font-black text-white shadow-xl shadow-black/20 sm:h-12 sm:w-12 sm:text-sm">
-                  {step.number}
-                </div>
-                <div className="rounded-lg border border-white/12 bg-[#1a4056] p-4 shadow-[0_18px_42px_rgba(2,8,16,0.18)] sm:p-5">
-                  <h3 className="text-base font-black tracking-normal text-white sm:text-lg">
-                    {step.title}
-                  </h3>
-                  <p className="mt-3 text-sm leading-6 text-slate-300">
-                    {step.description}
-                  </p>
-                </div>
-              </motion.li>
-            ))}
-          </ol>
-        </div>
+              transition={{ duration: 0.5, delay: index * 0.06 }}
+              className="relative border-t border-slate-300 pt-5"
+            >
+              <span
+                aria-hidden="true"
+                className="absolute -top-[5px] left-0 h-[9px] w-[9px] bg-gmac-orange"
+              />
+              <p className="text-sm font-semibold tabular-nums text-gmac-ember">
+                {step.number}
+              </p>
+              <h3 className="mt-3 text-base font-semibold text-gmac-ink">
+                {step.title}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {step.description}
+              </p>
+            </motion.li>
+          ))}
+        </ol>
       </div>
-    </AnimatedSection>
-  )
-}
-
-function GalleryCard({
-  item,
-  index,
-}: {
-  item: (typeof galleryItems)[number]
-  index: number
-}) {
-  const Icon = item.icon
-  const reduceMotion = useReducedMotion()
-
-  return (
-    <motion.article
-      initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, y: 26 }}
-      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.25 }}
-      transition={{ duration: 0.55, delay: index * 0.06 }}
-      className={`group relative h-full min-h-[18rem] overflow-hidden rounded-lg border border-white bg-gmac-ink shadow-[0_24px_58px_rgba(16,47,70,0.14)] sm:min-h-[22rem] xl:min-h-0 ${item.className}`}
-    >
-      <img
-        src={item.image}
-        alt={item.title}
-        loading="lazy" decoding="async"
-        className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-gmac-ink/86 via-gmac-ink/10 to-transparent opacity-84 transition group-hover:opacity-95" />
-      <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md border border-white/18 bg-white/12 text-gmac-orange backdrop-blur transition group-hover:-translate-y-1 sm:mb-4 sm:h-11 sm:w-11">
-          <Icon size={22} />
-        </div>
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-gmac-orange">
-          {item.label}
-        </p>
-        <h3 className="mt-2 text-xl font-black tracking-normal text-white sm:text-2xl">
-          {item.title}
-        </h3>
-      </div>
-    </motion.article>
+    </section>
   )
 }
 
 function Gallery() {
   return (
-    <AnimatedSection className="relative overflow-hidden bg-[linear-gradient(180deg,#f4f9fb_0%,#ffffff_100%)] px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28 xl:py-32">
-      <div className="fluid-grid absolute inset-0 opacity-45" />
-      <div className="absolute -right-16 top-20 hidden h-44 w-44 rotate-45 border-[18px] border-gmac-orange/8 sm:block" />
-      <div className="relative mx-auto max-w-7xl">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+    <section className={`bg-gmac-deep text-white ${sectionSpacing}`}>
+      <div className={shell}>
+        <Reveal className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-gmac-orange">
-              Galeria
-            </p>
-            <h2 className="mt-5 max-w-3xl text-balance text-3xl font-black leading-tight tracking-normal text-gmac-ink sm:text-4xl lg:text-5xl">
-              PORTFÓLIO INDUSTRIAL EM DETALHE
+            <Eyebrow onDark>Galeria</Eyebrow>
+            <h2 className={`${sectionTitle} max-w-3xl`}>
+              Portfólio industrial em detalhe
             </h2>
           </div>
-          <p className="max-w-md text-base leading-7 text-slate-600">
-            Usinagem, máquinas, peças, acabamento, caldeiraria, equipe e
-            ambiente industrial em uma composição visual premium.
+          <p className="max-w-md text-base leading-7 text-white/70">
+            Peças, máquinas e equipe em registros reais da nossa oficina.
           </p>
-        </div>
+        </Reveal>
 
-        <div className="mt-12 hidden grid-cols-4 auto-rows-[220px] gap-4 xl:grid">
-          {galleryItems.map((item, index) => (
-            <GalleryCard key={item.title} item={item} index={index} />
-          ))}
-        </div>
-
-        <div className="mt-8 flex snap-x gap-4 overflow-x-auto pb-5 sm:mt-10 xl:hidden">
-          {galleryItems.map((item, index) => (
-            <div key={item.title} className="min-w-[82%] snap-center md:min-w-[46%] lg:min-w-[36%]">
-              <GalleryCard item={item} index={index} />
-            </div>
-          ))}
-        </div>
-      </div>
-    </AnimatedSection>
-  )
-}
-
-function Quality() {
-  const reduceMotion = useReducedMotion()
-
-  return (
-    <AnimatedSection className="relative overflow-hidden bg-[linear-gradient(135deg,#102f46_0%,#173e52_46%,#0b1826_100%)] px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-8 lg:py-28 xl:py-32">
-      <div className="industrial-grid absolute inset-0 opacity-26" />
-      <div className="absolute right-8 top-16 hidden h-52 w-52 rotate-45 border border-gmac-cyan/16 sm:block" />
-      <div className="absolute bottom-10 left-10 hidden h-36 w-36 rotate-45 border-[14px] border-gmac-orange/8 sm:block" />
-
-      <div className="relative mx-auto max-w-7xl">
-        <div className="max-w-3xl">
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-gmac-orange">
-            Qualidade
-          </p>
-          <h2 className="mt-5 text-balance text-3xl font-black leading-tight tracking-normal sm:text-4xl lg:text-5xl">
-            PRECISÃO EM CADA DETALHE
-          </h2>
-        </div>
-
-        <motion.div
-          variants={container}
-          initial={import.meta.env.SSR || reduceMotion ? false : 'hidden'}
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          className="mt-9 grid gap-4 sm:mt-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+        <Reveal
+          delay={0.1}
+          className="mt-12 grid auto-rows-[9.5rem] grid-cols-2 gap-3 sm:auto-rows-[13rem] sm:gap-4 lg:auto-rows-[14rem] lg:grid-cols-4"
         >
-          {qualityItems.map((item, index) => {
-            const Icon = item.icon
-
-            return (
-              <motion.div
-                key={item.label}
-                variants={{
-                  hidden: { opacity: 0, y: reduceMotion ? 0 : 20 },
-                  visible: {
-                    opacity: 1,
-                    y: 0,
-                    transition: { duration: 0.55, delay: index * 0.04 },
-                  },
-                }}
-                whileHover={reduceMotion ? undefined : { y: -6 }}
-                className="group rounded-lg border border-white/12 bg-white/[0.07] p-5 shadow-[0_22px_56px_rgba(2,8,16,0.22)] backdrop-blur sm:p-6"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-md border border-white/14 bg-white/10 text-gmac-orange transition group-hover:border-gmac-orange/70 group-hover:bg-gmac-orange group-hover:text-white">
-                  <Icon size={23} />
-                </div>
-                <p className="mt-6 text-base font-black uppercase tracking-[0.1em] sm:mt-7 sm:text-lg sm:tracking-[0.12em]">
+          {galleryItems.map((item) => (
+            <figure
+              key={item.title}
+              className={`group relative overflow-hidden rounded bg-gmac-ink ${item.className}`}
+            >
+              <img
+                src={item.image}
+                alt={item.title}
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+              />
+              <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-gmac-deep/90 via-gmac-deep/50 to-transparent px-4 pb-4 pt-12 sm:px-5 sm:pb-5 sm:pt-16">
+                <span className="hidden text-xs font-semibold uppercase tracking-[0.14em] text-white/70 sm:block">
                   {item.label}
-                </p>
-                <span className="mt-5 block h-px w-10 bg-gmac-orange transition-all duration-300 group-hover:w-20" />
-              </motion.div>
-            )
-          })}
-        </motion.div>
+                </span>
+                <span className="block text-sm font-semibold text-white sm:mt-1 sm:text-lg">
+                  {item.title}
+                </span>
+              </figcaption>
+            </figure>
+          ))}
+        </Reveal>
       </div>
-    </AnimatedSection>
+    </section>
   )
 }
 
@@ -1433,14 +929,46 @@ function FieldError({ message }: { message?: string }) {
   if (!message) return null
 
   return (
-    <p className="mt-2 flex items-start gap-2 text-sm font-semibold text-red-600">
+    <p className="mt-2 flex items-start gap-2 text-sm font-medium text-red-700">
       <AlertCircle className="mt-0.5 h-4 w-4 flex-none" />
       {message}
     </p>
   )
 }
 
-function QuoteForm() {
+function TextField({
+  id,
+  label,
+  required = false,
+  error,
+  className = '',
+  ...input
+}: {
+  id: keyof QuoteFormState
+  label: string
+  required?: boolean
+  error?: string
+  className?: string
+} & Omit<InputHTMLAttributes<HTMLInputElement>, 'id' | 'className' | 'required'>) {
+  return (
+    <div className={className}>
+      <label htmlFor={id} className={fieldLabel}>
+        {label}
+        {required ? ' *' : ''}
+      </label>
+      <input
+        id={id}
+        aria-invalid={Boolean(error)}
+        aria-required={required}
+        className={fieldInput}
+        {...input}
+      />
+      <FieldError message={error} />
+    </div>
+  )
+}
+
+function QuoteForm({ requestedService }: { requestedService: { option: string } | null }) {
   const [form, setForm] = useState<QuoteFormState>(initialQuoteForm)
   const [files, setFiles] = useState<File[]>([])
   const [errors, setErrors] = useState<QuoteFormErrors>({})
@@ -1448,10 +976,16 @@ function QuoteForm() {
   const [isDragging, setIsDragging] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [showDetails, setShowDetails] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const reduceMotion = useReducedMotion()
   const descriptionCount = form.description.length
   const notesCount = form.notes.length
+
+  // A service card can open the form with its service already chosen.
+  useEffect(() => {
+    if (!requestedService) return
+    setForm((current) => ({ ...current, serviceType: requestedService.option }))
+  }, [requestedService])
 
   const updateField = (field: keyof QuoteFormState, value: string) => {
     setSubmitted(false)
@@ -1550,6 +1084,8 @@ function QuoteForm() {
     setErrors(validation)
 
     if (Object.keys(validation).length > 0) {
+      // The CNPJ lives in the optional block, which may be collapsed.
+      if (validation.cnpj) setShowDetails(true)
       window.setTimeout(() => {
         const firstInvalid = document.querySelector<HTMLElement>('[aria-invalid="true"]')
         firstInvalid?.focus({ preventScroll: true })
@@ -1562,7 +1098,7 @@ function QuoteForm() {
     setSubmitted(false)
 
     try {
-      const response = await submitQuoteRequest(form, files)
+      const response = await submitQuoteRequest(toQuotePayload(form), files)
 
       if (response.ok) {
         setSubmitted(true)
@@ -1580,523 +1116,457 @@ function QuoteForm() {
   }
 
   return (
-    <AnimatedSection
-      id="orcamento"
-      className="relative overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#f1f8fb_100%)] px-3 py-14 sm:px-4 sm:py-16 lg:px-4 lg:py-20"
-    >
-      <div className="fluid-grid absolute inset-0 opacity-45" />
-      <div className="absolute right-0 top-0 h-full w-1/3 bg-white/42" />
-      <div className="absolute -left-14 top-24 h-40 w-40 rotate-45 border-[16px] border-gmac-orange/8" />
+    <section id="orcamento" className={`bg-gmac-paper ${sectionSpacing}`}>
+      <div className={`${shell} grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16`}>
+        <Reveal className="lg:sticky lg:top-28 lg:self-start">
+          <Eyebrow>Orçamento</Eyebrow>
+          <h2 className={`${sectionTitle} text-gmac-ink`}>Solicite seu orçamento</h2>
+          <p className="mt-6 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+            Conte o que você precisa: com seu contato e uma descrição do serviço
+            já conseguimos começar. Responderemos o mais rápido possível.
+          </p>
 
-      <div className="relative mx-auto grid w-full max-w-[96rem] items-stretch gap-4 xl:grid-cols-[0.3fr_0.7fr] xl:gap-0">
-        <motion.aside
-          initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, x: -26 }}
-          whileInView={reduceMotion ? undefined : { opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.25 }}
-          transition={{ duration: 0.7 }}
-          className="relative hidden h-full overflow-hidden rounded-l-lg bg-gmac-navy p-6 text-white shadow-[0_28px_72px_rgba(16,47,70,0.18)] xl:block xl:p-7"
-        >
-          <img
-            src={assetUrl('assets/hero-cnc.png')}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover opacity-28"
-          />
-          <div className="absolute inset-0 bg-gmac-navy/84" />
-          <div className="industrial-grid absolute inset-0 opacity-24" />
-          <div className="absolute bottom-8 right-8 h-28 w-28 rotate-45 border border-gmac-cyan/24" />
-
-          <div className="relative">
-            <img
-              src={assetUrl('assets/gmac-logo-final-frame.png')}
-              alt="GMAC Metalúrgica"
-              className="h-20 w-auto object-contain"
-            />
-            <div className="mt-7 h-px w-20 bg-gmac-orange" />
-            <h2 className="mt-6 text-3xl font-black leading-tight tracking-normal">
-              Solicite seu orçamento
-            </h2>
-            <p className="mt-4 max-w-sm text-sm leading-6 text-slate-300">
-              Informe os dados técnicos do serviço para que a solicitação siga
-              com clareza desde o primeiro contato.
-            </p>
-
-            <div className="mt-7 grid gap-3">
+          <div className="mt-8 hidden lg:block">
+            <p className="text-sm font-semibold text-gmac-ink">Para agilizar a proposta, envie:</p>
+            <ul className="mt-4 grid gap-3">
               {[
-                'Dados da empresa e contato',
-                'Tipo de serviço e material',
-                'Descrição técnica e arquivos',
+                'Desenhos ou fotos da peça (PDF, DWG, DXF, JPG ou PNG)',
+                'Material, quantidade e dimensões',
+                'Prazo desejado',
               ].map((item) => (
-                <div key={item} className="flex items-center gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-gmac-orange" />
-                  <span className="text-sm font-bold text-slate-100">{item}</span>
-                </div>
+                <li key={item} className="flex items-start gap-3 text-[0.95rem] leading-6 text-slate-600">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 flex-none text-gmac-ember" />
+                  {item}
+                </li>
               ))}
+            </ul>
+          </div>
+
+          <div className="mt-8 border-t border-slate-300 pt-6">
+            <p className="text-sm font-semibold text-gmac-ink">Prefere falar direto?</p>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
+              <a href={whatsappUrl} target="_blank" rel="noreferrer" className={darkButton}>
+                <MessageCircle size={18} />
+                WhatsApp
+              </a>
+              <a href={phoneUrl} className={darkButton}>
+                <Phone size={18} />
+                {phoneLabel}
+              </a>
             </div>
           </div>
-        </motion.aside>
+        </Reveal>
 
-        <motion.form
-          noValidate
-          onSubmit={handleSubmit}
-          initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, x: 26 }}
-          whileInView={reduceMotion ? undefined : { opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.18 }}
-          transition={{ duration: 0.7 }}
-          className="rounded-lg border border-slate-200/80 bg-white/96 p-4 shadow-[0_28px_72px_rgba(16,47,70,0.14)] sm:p-5 lg:p-6 xl:rounded-l-none"
-        >
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-gmac-orange">
-              Orçamento
-            </p>
-            <h2 className="mt-2 text-balance text-2xl font-black leading-tight tracking-normal text-gmac-ink sm:text-3xl lg:text-4xl">
-              SOLICITAR ORÇAMENTO
-            </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              Preencha as informações abaixo com os detalhes do serviço
-              desejado. Responderemos o mais rápido possível.
-            </p>
-          </div>
-
-          {submitError ? <p role="alert" className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-700">{submitError}</p> : null}
-          {submitted ? (
-            <motion.div
-              initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-6 flex gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-900"
-              role="status"
-              aria-live="polite"
-            >
-              <CheckCircle2 className="mt-0.5 h-5 w-5 flex-none" />
-              <div>
-                <p className="font-black">Solicitação enviada com sucesso.</p>
-                <p className="mt-1 text-sm font-semibold">
-                  A equipe da GMAC retornará pelo contato informado.
-                </p>
-              </div>
-            </motion.div>
-          ) : null}
-
-          <fieldset className="mt-7">
-            <legend className="mb-4 flex items-center gap-3 text-xs font-black uppercase tracking-[0.18em] text-gmac-navy">
-              <span className="h-6 w-1 bg-gmac-orange" />
-              Dados da empresa
-            </legend>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <div>
-                <label htmlFor="companyName" className="text-sm font-black text-gmac-ink">
-                  Nome da empresa *
-                </label>
-                <input
-                  id="companyName"
-                  value={form.companyName}
-                  onChange={(event) => updateField('companyName', event.target.value)}
-                  aria-invalid={Boolean(errors.companyName)}
-                  autoComplete="organization"
-                  className="mt-2 w-full border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-gmac-ink outline-none transition placeholder:text-slate-400 focus:border-gmac-orange focus:bg-white focus:ring-4 focus:ring-orange-100"
-                  placeholder="Digite o nome da empresa"
-                />
-                <FieldError message={errors.companyName} />
-              </div>
-
-              <div>
-                <label htmlFor="cnpj" className="text-sm font-black text-gmac-ink">
-                  CNPJ *
-                </label>
-                <input
-                  id="cnpj"
-                  value={form.cnpj}
-                  onChange={(event) => updateField('cnpj', formatCnpj(event.target.value))}
-                  aria-invalid={Boolean(errors.cnpj)}
-                  inputMode="numeric"
-                  autoComplete="off"
-                  className="mt-2 w-full border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-gmac-ink outline-none transition placeholder:text-slate-400 focus:border-gmac-orange focus:bg-white focus:ring-4 focus:ring-orange-100"
-                  placeholder="00.000.000/0000-00"
-                />
-                <FieldError message={errors.cnpj} />
-              </div>
-
-              <div>
-                <label htmlFor="contactName" className="text-sm font-black text-gmac-ink">
-                  Nome do contato *
-                </label>
-                <input
+        <Reveal delay={0.1}>
+          <form
+            noValidate
+            onSubmit={handleSubmit}
+            className="rounded border border-slate-200 bg-white p-5 shadow-[0_24px_60px_rgba(11,24,38,0.07)] sm:p-8"
+          >
+            <div role="group" aria-labelledby="quote-contact">
+              <h3 id="quote-contact" className="text-lg font-semibold tracking-[-0.015em] text-gmac-ink">
+                Seu contato
+              </h3>
+              <div className="mt-5 grid gap-5 sm:grid-cols-2">
+                <TextField
                   id="contactName"
+                  label="Nome"
+                  required
                   value={form.contactName}
                   onChange={(event) => updateField('contactName', event.target.value)}
-                  aria-invalid={Boolean(errors.contactName)}
+                  error={errors.contactName}
                   autoComplete="name"
-                  className="mt-2 w-full border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-gmac-ink outline-none transition placeholder:text-slate-400 focus:border-gmac-orange focus:bg-white focus:ring-4 focus:ring-orange-100"
-                  placeholder="Digite o nome do contato"
+                  maxLength={120}
+                  placeholder="Seu nome"
                 />
-                <FieldError message={errors.contactName} />
-              </div>
-
-              <div>
-                <label htmlFor="email" className="text-sm font-black text-gmac-ink">
-                  E-mail *
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={form.email}
-                  onChange={(event) => updateField('email', event.target.value)}
-                  aria-invalid={Boolean(errors.email)}
-                  autoComplete="email"
-                  className="mt-2 w-full border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-gmac-ink outline-none transition placeholder:text-slate-400 focus:border-gmac-orange focus:bg-white focus:ring-4 focus:ring-orange-100"
-                  placeholder="exemplo@empresa.com.br"
-                />
-                <FieldError message={errors.email} />
-              </div>
-
-              <div>
-                <label htmlFor="phone" className="text-sm font-black text-gmac-ink">
-                  Telefone *
-                </label>
-                <input
+                <TextField
                   id="phone"
+                  label="Telefone / WhatsApp"
+                  required
                   value={form.phone}
                   onChange={(event) => updateField('phone', formatPhone(event.target.value))}
-                  aria-invalid={Boolean(errors.phone)}
+                  error={errors.phone}
                   inputMode="tel"
                   autoComplete="tel"
-                  className="mt-2 w-full border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-gmac-ink outline-none transition placeholder:text-slate-400 focus:border-gmac-orange focus:bg-white focus:ring-4 focus:ring-orange-100"
                   placeholder="(00) 00000-0000"
                 />
-                <FieldError message={errors.phone} />
-              </div>
-
-              <div>
-                <label htmlFor="role" className="text-sm font-black text-gmac-ink">
-                  Cargo / Função
-                </label>
-                <input
-                  id="role"
-                  value={form.role}
-                  onChange={(event) => updateField('role', event.target.value)}
-                  autoComplete="organization-title"
-                  className="mt-2 w-full border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-gmac-ink outline-none transition placeholder:text-slate-400 focus:border-gmac-orange focus:bg-white focus:ring-4 focus:ring-orange-100"
-                  placeholder="Digite o cargo ou função"
+                <TextField
+                  id="email"
+                  type="email"
+                  label="E-mail"
+                  required
+                  value={form.email}
+                  onChange={(event) => updateField('email', event.target.value)}
+                  error={errors.email}
+                  autoComplete="email"
+                  maxLength={254}
+                  placeholder="exemplo@empresa.com.br"
+                />
+                <TextField
+                  id="companyName"
+                  label="Empresa"
+                  value={form.companyName}
+                  onChange={(event) => updateField('companyName', event.target.value)}
+                  autoComplete="organization"
+                  maxLength={254}
+                  placeholder="Nome da empresa (opcional)"
                 />
               </div>
             </div>
-          </fieldset>
 
-          <fieldset className="mt-7 border-t border-slate-200 pt-6">
-            <legend className="mb-4 flex items-center gap-3 text-xs font-black uppercase tracking-[0.18em] text-gmac-navy">
-              <span className="h-6 w-1 bg-gmac-orange" />
-              Informações do serviço
-            </legend>
+            <div role="group" aria-labelledby="quote-service" className="mt-9 border-t border-slate-200 pt-8">
+              <h3 id="quote-service" className="text-lg font-semibold tracking-[-0.015em] text-gmac-ink">
+                O que você precisa
+              </h3>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <div>
-                <label htmlFor="serviceType" className="text-sm font-black text-gmac-ink">
-                  Tipo de serviço *
+              <div className="mt-5">
+                <label htmlFor="serviceType" className={fieldLabel}>
+                  Tipo de serviço
                 </label>
                 <select
                   id="serviceType"
                   value={form.serviceType}
                   onChange={(event) => updateField('serviceType', event.target.value)}
-                  aria-invalid={Boolean(errors.serviceType)}
-                  className="mt-2 w-full border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-gmac-ink outline-none transition focus:border-gmac-orange focus:bg-white focus:ring-4 focus:ring-orange-100"
+                  className={fieldInput}
                 >
-                  <option value="">Selecione o tipo de serviço</option>
+                  <option value="">Selecione (opcional)</option>
                   {serviceOptions.map((option) => (
                     <option key={option} value={option}>
                       {option}
                     </option>
                   ))}
                 </select>
-                <FieldError message={errors.serviceType} />
               </div>
 
-              <div>
-                <label htmlFor="material" className="text-sm font-black text-gmac-ink">
-                  Material principal
+              <div className="mt-5">
+                <div className="flex flex-wrap items-end justify-between gap-2">
+                  <label htmlFor="description" className={fieldLabel}>
+                    Descrição do serviço *
+                  </label>
+                  <span className="text-xs text-slate-500">{descriptionCount}/1000</span>
+                </div>
+                <textarea
+                  id="description"
+                  value={form.description}
+                  onChange={(event) => updateField('description', event.target.value)}
+                  aria-invalid={Boolean(errors.description)}
+                  aria-required
+                  maxLength={1000}
+                  rows={4}
+                  className={`${fieldInput} resize-y leading-6`}
+                  placeholder="Descreva a peça ou o serviço: medidas, tolerâncias, acabamento e o que mais for importante."
+                />
+                <FieldError message={errors.description} />
+              </div>
+
+              <div className="mt-5">
+                <p className={fieldLabel}>Arquivos</p>
+                <label
+                  htmlFor="quoteFiles"
+                  onDragOver={(event) => {
+                    event.preventDefault()
+                    setIsDragging(true)
+                  }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={handleDrop}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      fileInputRef.current?.click()
+                    }
+                  }}
+                  tabIndex={0}
+                  className={`mt-2 flex cursor-pointer items-center gap-4 rounded border border-dashed px-4 py-4 outline-none transition focus:border-gmac-ink focus:ring-2 focus:ring-gmac-orange/40 ${
+                    isDragging
+                      ? 'border-gmac-orange bg-orange-50'
+                      : 'border-slate-300 bg-gmac-paper hover:border-gmac-ink'
+                  }`}
+                >
+                  <UploadCloud className="h-7 w-7 flex-none text-gmac-ember" />
+                  <span>
+                    <span className="block text-sm font-semibold text-gmac-ink">
+                      Anexar desenhos ou fotos
+                    </span>
+                    <span className="mt-1 block text-xs leading-5 text-slate-500">
+                      PDF, DWG, DXF, JPG e PNG. Até {formatFileSize(maxFileSize)} por
+                      arquivo e {formatFileSize(maxTotalFileSize)} no total.
+                    </span>
+                  </span>
                 </label>
                 <input
+                  ref={fileInputRef}
+                  id="quoteFiles"
+                  type="file"
+                  multiple
+                  accept=".pdf,.dwg,.dxf,.jpg,.jpeg,.png"
+                  onChange={handleFileInput}
+                  aria-invalid={Boolean(errors.files)}
+                  className="sr-only"
+                />
+                <FieldError message={errors.files} />
+
+                {files.length > 0 ? (
+                  <ul className="mt-4 grid gap-3" aria-label="Arquivos anexados">
+                    {files.map((file, index) => (
+                      <li
+                        key={`${file.name}-${file.size}-${index}`}
+                        className="flex items-center justify-between gap-3 rounded border border-slate-200 bg-white p-3"
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <FileText className="h-5 w-5 flex-none text-gmac-blue" />
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-gmac-ink">
+                              {file.name}
+                            </p>
+                            <p className="mt-1 text-xs text-slate-500">
+                              {formatFileSize(file.size)}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="flex h-11 w-11 flex-none items-center justify-center rounded border border-slate-200 text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                          aria-label={`Remover arquivo ${file.name}`}
+                        >
+                          <Trash2 size={17} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            </div>
+
+            <details
+              open={showDetails}
+              onToggle={(event) => setShowDetails(event.currentTarget.open)}
+              className="group/details mt-8 rounded border border-slate-200"
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 text-sm font-semibold text-gmac-ink [&::-webkit-details-marker]:hidden">
+                Adicionar detalhes técnicos (opcional)
+                <ChevronDown className="h-4 w-4 flex-none transition-transform group-open/details:rotate-180" />
+              </summary>
+              <div className="grid gap-5 border-t border-slate-200 p-4 sm:grid-cols-2 sm:p-5">
+                <TextField
+                  id="cnpj"
+                  label="CNPJ"
+                  value={form.cnpj}
+                  onChange={(event) => updateField('cnpj', formatCnpj(event.target.value))}
+                  error={errors.cnpj}
+                  inputMode="numeric"
+                  autoComplete="off"
+                  placeholder="00.000.000/0000-00"
+                />
+                <TextField
+                  id="role"
+                  label="Cargo / Função"
+                  value={form.role}
+                  onChange={(event) => updateField('role', event.target.value)}
+                  autoComplete="organization-title"
+                  maxLength={254}
+                />
+                <TextField
                   id="material"
+                  label="Material principal"
                   value={form.material}
                   onChange={(event) => updateField('material', event.target.value)}
-                  className="mt-2 w-full border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-gmac-ink outline-none transition placeholder:text-slate-400 focus:border-gmac-orange focus:bg-white focus:ring-4 focus:ring-orange-100"
-                  placeholder="Ex.: Aço carbono, Alumínio, Inox"
+                  maxLength={254}
+                  placeholder="Ex.: aço carbono, alumínio, inox"
                 />
-              </div>
-
-              <div>
-                <label htmlFor="quantity" className="text-sm font-black text-gmac-ink">
-                  Quantidade estimada
-                </label>
-                <input
+                <TextField
                   id="quantity"
+                  label="Quantidade estimada"
                   value={form.quantity}
                   onChange={(event) => updateField('quantity', event.target.value)}
-                  className="mt-2 w-full border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-gmac-ink outline-none transition placeholder:text-slate-400 focus:border-gmac-orange focus:bg-white focus:ring-4 focus:ring-orange-100"
+                  maxLength={254}
                   placeholder="Ex.: 10 peças"
                 />
-              </div>
-
-              <div className="md:col-span-2 lg:col-span-3">
-                <label htmlFor="dimensions" className="text-sm font-black text-gmac-ink">
-                  Dimensões / referências técnicas
-                </label>
-                <input
+                <TextField
                   id="dimensions"
+                  label="Dimensões / referências técnicas"
+                  className="sm:col-span-2"
                   value={form.dimensions}
                   onChange={(event) => updateField('dimensions', event.target.value)}
-                  className="mt-2 w-full border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-gmac-ink outline-none transition placeholder:text-slate-400 focus:border-gmac-orange focus:bg-white focus:ring-4 focus:ring-orange-100"
+                  maxLength={254}
                   placeholder="Ex.: medidas, tolerâncias ou acabamento"
                 />
+                <TextField
+                  id="deadline"
+                  type="date"
+                  label="Prazo desejado"
+                  value={form.deadline}
+                  onChange={(event) => updateField('deadline', event.target.value)}
+                />
+                <div className="sm:col-span-2">
+                  <div className="flex flex-wrap items-end justify-between gap-2">
+                    <label htmlFor="notes" className={fieldLabel}>
+                      Observações adicionais
+                    </label>
+                    <span className="text-xs text-slate-500">{notesCount}/500</span>
+                  </div>
+                  <textarea
+                    id="notes"
+                    value={form.notes}
+                    onChange={(event) => updateField('notes', event.target.value)}
+                    maxLength={500}
+                    rows={3}
+                    className={`${fieldInput} resize-y leading-6`}
+                    placeholder="Informações adicionais que possam ajudar na elaboração do orçamento."
+                  />
+                </div>
               </div>
+            </details>
+
+            <div className="mt-8">
+              {submitError ? (
+                <p role="alert" className="mb-4 rounded border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                  {submitError}
+                </p>
+              ) : null}
+              {submitted ? (
+                <div
+                  className="mb-4 flex gap-3 rounded border border-emerald-200 bg-emerald-50 p-4 text-emerald-900"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 flex-none" />
+                  <div>
+                    <p className="font-semibold">Solicitação enviada com sucesso.</p>
+                    <p className="mt-1 text-sm">
+                      A equipe da GMAC retornará pelo contato informado.
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`${primaryButton} w-full disabled:cursor-not-allowed disabled:opacity-70`}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Enviando solicitação
+                  </>
+                ) : (
+                  <>
+                    Enviar solicitação
+                    <ArrowRight size={18} />
+                  </>
+                )}
+              </button>
+              <p className="mt-4 text-center text-xs leading-5 text-slate-500">
+                <ShieldCheck className="mr-1.5 inline h-4 w-4 align-[-3px] text-gmac-ember" />
+                Campos com * são obrigatórios. Seus dados estão seguros conosco.
+              </p>
             </div>
-          </fieldset>
-
-          <div className="mt-6">
-            <div className="flex flex-wrap items-end justify-between gap-2">
-              <label htmlFor="description" className="text-sm font-black text-gmac-ink">
-                Descrição detalhada *
-              </label>
-              <span className="text-xs font-bold text-slate-400">{descriptionCount}/1000</span>
-            </div>
-            <textarea
-              id="description"
-              value={form.description}
-              onChange={(event) => updateField('description', event.target.value)}
-              aria-invalid={Boolean(errors.description)}
-              maxLength={1000}
-              rows={3}
-              className="mt-2 w-full resize-y border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold leading-6 text-gmac-ink outline-none transition placeholder:text-slate-400 focus:border-gmac-orange focus:bg-white focus:ring-4 focus:ring-orange-100"
-              placeholder="Descreva o serviço em detalhes, incluindo dimensões, tolerâncias, acabamentos, processos desejados e outras informações importantes."
-            />
-            <FieldError message={errors.description} />
-          </div>
-
-          <div className="mt-6">
-            <p className="text-sm font-black text-gmac-ink">Arquivos</p>
-            <label
-              htmlFor="quoteFiles"
-              onDragOver={(event) => {
-                event.preventDefault()
-                setIsDragging(true)
-              }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={handleDrop}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault()
-                  fileInputRef.current?.click()
-                }
-              }}
-              tabIndex={0}
-              className={`mt-2 flex cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-4 py-4 text-center outline-none transition focus:border-gmac-orange focus:ring-4 focus:ring-orange-100 ${
-                isDragging
-                  ? 'border-gmac-orange bg-orange-50'
-                  : 'border-slate-300 bg-slate-50 hover:border-gmac-orange hover:bg-white'
-              }`}
-            >
-              <UploadCloud className="h-7 w-7 text-gmac-orange" />
-              <span className="mt-2 text-xs font-black text-gmac-ink sm:text-sm">
-                Arraste seus arquivos aqui ou clique para selecionar
-              </span>
-              <span className="mt-1 text-xs font-bold text-slate-500">
-                PDF, DWG, DXF, JPG e PNG
-              </span>
-              <span className="mt-1 text-xs font-semibold leading-5 text-slate-400">
-                Até {formatFileSize(maxFileSize)} por arquivo e {formatFileSize(maxTotalFileSize)} no total
-              </span>
-            </label>
-            <input
-              ref={fileInputRef}
-              id="quoteFiles"
-              type="file"
-              multiple
-              accept=".pdf,.dwg,.dxf,.jpg,.jpeg,.png"
-              onChange={handleFileInput}
-              aria-invalid={Boolean(errors.files)}
-              className="sr-only"
-            />
-            <FieldError message={errors.files} />
-
-            {files.length > 0 ? (
-              <ul className="mt-4 grid gap-3" aria-label="Arquivos anexados">
-                {files.map((file, index) => (
-                  <li
-                    key={`${file.name}-${file.size}-${index}`}
-                    className="flex items-center justify-between gap-3 rounded-md border border-slate-200 bg-white p-3 shadow-sm"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <FileText className="h-5 w-5 flex-none text-gmac-blue" />
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-black text-gmac-ink">
-                          {file.name}
-                        </p>
-                        <p className="mt-1 text-xs font-bold text-slate-500">
-                          {formatFileSize(file.size)}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeFile(index)}
-                      className="flex h-9 w-9 flex-none items-center justify-center rounded-md border border-slate-200 text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-4 focus:ring-red-100"
-                      aria-label={`Remover arquivo ${file.name}`}
-                    >
-                      <Trash2 size={17} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <div>
-              <label htmlFor="deadline" className="text-sm font-black text-gmac-ink">
-                Prazo desejado
-              </label>
-              <input
-                id="deadline"
-                type="date"
-                value={form.deadline}
-                onChange={(event) => updateField('deadline', event.target.value)}
-                className="mt-2 w-full border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-gmac-ink outline-none transition focus:border-gmac-orange focus:bg-white focus:ring-4 focus:ring-orange-100"
-              />
-            </div>
-
-            <div>
-              <div className="flex flex-wrap items-end justify-between gap-2">
-                <label htmlFor="notes" className="text-sm font-black text-gmac-ink">
-                  Observações adicionais
-                </label>
-                <span className="text-xs font-bold text-slate-400">{notesCount}/500</span>
-              </div>
-              <textarea
-                id="notes"
-                value={form.notes}
-                onChange={(event) => updateField('notes', event.target.value)}
-                maxLength={500}
-                rows={3}
-                className="mt-2 w-full resize-y border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold leading-6 text-gmac-ink outline-none transition placeholder:text-slate-400 focus:border-gmac-orange focus:bg-white focus:ring-4 focus:ring-orange-100"
-                placeholder="Informações adicionais que possam ajudar na elaboração do orçamento."
-              />
-            </div>
-          </div>
-
-          <div className="mt-6 border-t border-slate-200 pt-5">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="brand-corners inline-flex w-full items-center justify-center gap-2 bg-gmac-orange px-4 py-3 text-center text-[0.72rem] font-black uppercase leading-5 tracking-[0.04em] text-white shadow-xl shadow-orange-900/20 transition hover:-translate-y-0.5 hover:bg-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-100 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 sm:gap-3 sm:px-6 sm:text-sm sm:tracking-[0.14em]"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Enviando solicitação
-                </>
-              ) : (
-                <>
-                  Enviar solicitação de orçamento
-                  <ArrowRight size={18} />
-                </>
-              )}
-            </button>
-            <p className="mt-3 text-center text-xs font-bold text-slate-500">
-              🔒 Seus dados estão seguros conosco.
-            </p>
-          </div>
-        </motion.form>
+          </form>
+        </Reveal>
       </div>
-    </AnimatedSection>
+    </section>
+  )
+}
+
+function OpeningHours({ onDark = false }: { onDark?: boolean }) {
+  return (
+    <dl className="grid gap-1.5">
+      {businessHours.map((entry) => (
+        <div key={entry.days} className="flex justify-between gap-6">
+          <dt>{entry.days}</dt>
+          <dd className={`tabular-nums ${onDark ? 'text-white' : 'font-medium text-gmac-ink'}`}>
+            {entry.hours}
+          </dd>
+        </div>
+      ))}
+    </dl>
   )
 }
 
 function Contact() {
   return (
-    <section
-      id="contato"
-      className="relative overflow-hidden bg-[linear-gradient(180deg,#f6fbfd_0%,#ffffff_100%)] px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28 xl:py-32"
-      aria-label="Contato"
-    >
-      <div className="fluid-grid absolute inset-0 opacity-45" />
-      <div className="absolute left-0 top-0 h-full w-1/3 bg-white/46" />
-      <div className="relative mx-auto grid max-w-7xl gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-stretch xl:gap-10">
-        <div className="rounded-lg border border-slate-200/80 bg-white/94 p-5 shadow-[0_22px_56px_rgba(16,47,70,0.12)] sm:p-7 xl:p-9">
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-gmac-orange">
-            Contato
-          </p>
-          <h2 className="mt-5 text-balance text-3xl font-black leading-tight tracking-normal text-gmac-ink sm:text-4xl xl:text-5xl">
-            VAMOS CONVERSAR SOBRE SEU PROJETO
+    <section id="contato" className={`bg-white ${sectionSpacing}`} aria-label="Contato">
+      <div className={shell}>
+        <Reveal>
+          <Eyebrow>Contato</Eyebrow>
+          <h2 className={`${sectionTitle} max-w-3xl text-gmac-ink`}>
+            Vamos conversar sobre seu projeto
           </h2>
+        </Reveal>
 
-          <div className="mt-7 grid gap-6 sm:mt-9">
-            <div>
-              <p className="text-xl font-black text-gmac-navy">
-                GMAC METALÚRGICA
-              </p>
-              <div className="mt-4 flex gap-3 text-slate-600">
-                <MapPin className="mt-1 h-5 w-5 flex-none text-gmac-orange" />
-                <p className="leading-7">
-                  Av. Banco do Nordeste, Nº 35 - CIS
-                  <span className="block">Feira de Santana - BA</span>
-                </p>
-              </div>
-              <a
-                href="https://wa.me/557536166626?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20com%20a%20GMAC%20sobre%20um%20projeto."
-                target="_blank"
-                rel="noreferrer"
-                className="mt-4 flex items-center gap-3 text-lg font-black text-gmac-blue transition hover:text-gmac-orange"
-              >
-                <Phone size={20} />
-                (75) 3616-6626
-              </a>
-            </div>
+        <div className="mt-12 grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+          <Reveal>
+            <ul className="border-t border-slate-200 text-[0.95rem] leading-7 text-slate-600">
+              <li className="flex gap-4 border-b border-slate-200 py-5">
+                <MapPin className="mt-1 h-5 w-5 flex-none text-gmac-ember" />
+                <div>
+                  <p className="text-sm font-semibold text-gmac-ink">Endereço</p>
+                  <p className="mt-1">
+                    {businessAddress[0]}
+                    <span className="block">{businessAddress[1]}</span>
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Plus Code: {businessPlusCode}
+                  </p>
+                </div>
+              </li>
+              <li className="flex gap-4 border-b border-slate-200 py-5">
+                <Phone className="mt-1 h-5 w-5 flex-none text-gmac-ember" />
+                <div>
+                  <p className="text-sm font-semibold text-gmac-ink">Telefone e WhatsApp</p>
+                  <a
+                    href={phoneUrl}
+                    className="mt-1 block text-lg font-semibold text-gmac-ink transition-colors hover:text-gmac-ember"
+                  >
+                    {phoneLabel}
+                  </a>
+                </div>
+              </li>
+              <li className="flex gap-4 border-b border-slate-200 py-5">
+                <Clock className="mt-1 h-5 w-5 flex-none text-gmac-ember" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gmac-ink">Horário de funcionamento</p>
+                  <div className="mt-1 max-w-xs">
+                    <OpeningHours />
+                  </div>
+                </div>
+              </li>
+            </ul>
 
-            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
-              <a
-                href="https://wa.me/557536166626?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20com%20a%20GMAC%20sobre%20um%20projeto."
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-md border border-gmac-navy bg-gmac-navy px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:-translate-y-0.5 hover:bg-gmac-blue"
-              >
-                Ligar
-                <Phone size={17} />
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
+              <a href={whatsappUrl} target="_blank" rel="noreferrer" className={primaryButton}>
+                <MessageCircle size={18} />
+                Chamar no WhatsApp
               </a>
-              <a
-                href="#orcamento"
-                className="inline-flex items-center justify-center gap-2 rounded-md border border-gmac-orange bg-gmac-orange px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:-translate-y-0.5 hover:bg-orange-500"
-              >
+              <a href="#orcamento" className={darkButton}>
                 Solicitar orçamento
-                <ArrowRight size={17} />
+                <ArrowRight size={18} />
               </a>
             </div>
-          </div>
-        </div>
+          </Reveal>
 
-        <div className="relative min-h-[18rem] overflow-hidden rounded-lg border border-slate-200/80 bg-white shadow-[0_28px_70px_rgba(16,47,70,0.14)] sm:min-h-[22rem] lg:min-h-[24rem]">
-          <iframe
-            title="Mapa da GMAC Metalúrgica"
-            src={gmacMapsEmbedUrl}
-            className="absolute inset-0 h-full w-full"
-            loading="lazy"
-            allowFullScreen
-            referrerPolicy="no-referrer-when-downgrade"
-          />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-gmac-navy/62 to-transparent" />
-          <div className="absolute left-3 top-3 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-2 sm:left-5 sm:top-5 sm:max-w-[calc(100%-2.5rem)] sm:gap-3">
-            <div className="flex items-center gap-2 rounded-md border border-white/20 bg-gmac-navy/88 px-3 py-2 text-white shadow-xl shadow-slate-900/20 backdrop-blur">
-              <MapPin className="h-4 w-4 text-gmac-orange" />
-              <span className="text-[0.68rem] font-black uppercase tracking-[0.1em] sm:text-xs sm:tracking-[0.16em]">
-                GMAC Metalúrgica
-              </span>
+          <Reveal delay={0.1} className="flex flex-col">
+            <div className="relative min-h-[20rem] flex-1 overflow-hidden rounded border border-slate-200 bg-gmac-paper sm:min-h-[24rem]">
+              <iframe
+                title="Mapa da GMAC Metalúrgica"
+                src={gmacMapsEmbedUrl}
+                className="absolute inset-0 h-full w-full"
+                loading="lazy"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+              />
             </div>
             <a
               href={gmacMapsUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center rounded-md border border-gmac-orange bg-gmac-orange px-3 py-2 text-[0.68rem] font-black uppercase tracking-[0.08em] text-white shadow-xl shadow-orange-950/20 transition hover:bg-orange-500 sm:text-xs sm:tracking-[0.12em]"
+              className="mt-4 inline-flex items-center gap-2 self-start text-sm font-semibold text-gmac-ink transition-colors hover:text-gmac-ember"
             >
-              Abrir mapa
+              Abrir no Google Maps
+              <ArrowUpRight size={16} />
             </a>
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>
@@ -2105,40 +1575,68 @@ function Contact() {
 
 function Footer() {
   return (
-    <footer className="bg-[linear-gradient(135deg,#0b1826_0%,#102f46_64%,#0c1d2b_100%)] px-4 py-10 text-white sm:px-6 sm:py-12 lg:px-8">
-      <div className="mx-auto grid max-w-7xl gap-10 border-b border-white/10 pb-10 lg:grid-cols-[1fr_1.2fr] lg:items-center">
-        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-          <img
-            src={assetUrl('assets/gmac-logo-final-frame.png')}
-            alt="GMAC Metalúrgica"
-            className="h-14 w-auto object-contain sm:h-16"
-          />
-          <div>
-            <p className="text-lg font-black uppercase tracking-[0.1em]">
-              GMAC Metalúrgica
-            </p>
-            <p className="mt-2 text-sm font-semibold text-slate-400">
-              Usinagem - Caldeiraria - Manutenção Industrial
-            </p>
-          </div>
+    <footer className="bg-gmac-deep text-white">
+      <div className={`${shell} grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.3fr_0.8fr_1.1fr_1.1fr] lg:gap-12 lg:py-16`}>
+        <div>
+          <LogoBadge className="h-16 w-16" />
+          <p className="mt-5 text-lg font-semibold tracking-[-0.015em]">
+            GMAC Metalúrgica
+          </p>
+          <p className="mt-2 text-sm leading-6 text-white/60">
+            Usinagem · Caldeiraria · Manutenção industrial
+          </p>
         </div>
 
-        <nav className="flex flex-wrap gap-x-6 gap-y-3 lg:justify-end" aria-label="Rodapé">
-          {footerLinks.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="text-xs font-black uppercase tracking-[0.16em] text-white/62 transition hover:text-white"
-            >
-              {item.label}
-            </a>
-          ))}
+        <nav aria-label="Rodapé">
+          <p className="text-sm font-semibold text-white">Navegação</p>
+          <ul className="mt-4 grid gap-2.5">
+            {footerLinks.map((item) => (
+              <li key={item.label}>
+                <a
+                  href={item.href}
+                  className="text-sm text-white/60 transition-colors hover:text-white"
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
         </nav>
+
+        <div>
+          <p className="text-sm font-semibold text-white">Contato</p>
+          <address className="mt-4 text-sm not-italic leading-6 text-white/60">
+            {businessAddress[0]}
+            <span className="block">{businessAddress[1]}</span>
+          </address>
+          <a
+            href={phoneUrl}
+            className="mt-3 block text-sm font-semibold text-white transition-colors hover:text-gmac-orange"
+          >
+            {phoneLabel}
+          </a>
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-1.5 inline-flex items-center gap-1.5 text-sm text-white/60 transition-colors hover:text-white"
+          >
+            WhatsApp
+            <ArrowUpRight size={14} />
+          </a>
+        </div>
+
+        <div>
+          <p className="text-sm font-semibold text-white">Horário de funcionamento</p>
+          <div className="mt-4 text-sm leading-6 text-white/60">
+            <OpeningHours onDark />
+          </div>
+        </div>
       </div>
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 pt-8 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-        <p>© 2026 GMAC Metalúrgica. Todos os direitos reservados.</p>
-        <p className="font-semibold text-slate-500">
-          Usinagem - Caldeiraria - Manutenção Industrial
+
+      <div className="border-t border-white/10">
+        <p className={`${shell} py-6 text-sm text-white/50`}>
+          © {new Date().getFullYear()} GMAC Metalúrgica. Todos os direitos reservados.
         </p>
       </div>
     </footer>
@@ -2146,19 +1644,20 @@ function Footer() {
 }
 
 function App() {
+  const [requestedService, setRequestedService] = useState<{ option: string } | null>(null)
+
   return (
-    <main className="min-h-screen overflow-x-clip bg-[#f6fafc]">
+    <main className="min-h-screen overflow-x-clip bg-gmac-paper">
       <HashScrollHandler />
       <Header />
       <Hero />
       <MetalScroll />
       <About />
       <Clients />
-      <Services />
+      <Services onRequestQuote={(option) => setRequestedService({ option })} />
       <ProcessTimeline />
       <Gallery />
-      <Quality />
-      <QuoteForm />
+      <QuoteForm requestedService={requestedService} />
       <Contact />
       <Footer />
     </main>

@@ -11,9 +11,9 @@
 
 :root {
   color: #0b1826;
-  background: #f6fafc;
+  background: #f5f8fa;
   font-family:
-    "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    "Inter Variable", "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -22,13 +22,13 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 92px;
+  scroll-padding-top: 88px;
 }
 
 body {
   margin: 0;
   min-width: 320px;
-  background: #f6fafc;
+  background: #f5f8fa;
 }
 
 button,
@@ -37,69 +37,37 @@ a {
 }
 
 ::selection {
-  color: #ffffff;
+  color: #0b1826;
   background: #f47a20;
 }
 
-.industrial-grid {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
-  background-size: 44px 44px;
-  pointer-events: none;
-}
-
-.fluid-grid {
-  background-image:
-    linear-gradient(rgba(40, 118, 158, 0.09) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(40, 118, 158, 0.09) 1px, transparent 1px);
-  background-size: 52px 52px;
-  pointer-events: none;
-}
-
+/* The chamfered corner is reserved for primary calls to action. */
 .brand-corners {
-  border-radius: 6px;
-  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
 }
 
-.hero-title {
-  text-shadow: 0 18px 48px rgba(3, 14, 24, 0.45);
+/* An outline would be cut by the clip-path, so focus is drawn inside. */
+.brand-corners:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px #0b1826;
+}
+
+/* One shade keeps the copy legible and leaves the weld arc visible. */
+.hero-shade {
+  background:
+    linear-gradient(0deg, rgba(7, 18, 27, 0.9) 0%, rgba(7, 18, 27, 0) 46%),
+    linear-gradient(90deg, rgba(7, 18, 27, 0.9) 0%, rgba(7, 18, 27, 0.66) 44%, rgba(7, 18, 27, 0.18) 78%, rgba(7, 18, 27, 0.4) 100%);
+  pointer-events: none;
 }
 
 .text-balance {
   text-wrap: balance;
 }
 
-.ambient-sweep {
-  animation: ambient-sweep 12s ease-in-out infinite;
-  background: linear-gradient(
-    115deg,
-    transparent 0%,
-    rgba(107, 214, 230, 0.16) 42%,
-    rgba(244, 122, 32, 0.1) 56%,
-    transparent 74%
-  );
-  pointer-events: none;
-  transform: translateX(-34%) skewX(-7deg);
-}
-
 input:not([type="file"]),
 select,
 textarea {
-  border-radius: 6px;
-}
-
-@keyframes ambient-sweep {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: translateX(-34%) skewX(-7deg);
-  }
-
-  50% {
-    opacity: 0.85;
-    transform: translateX(28%) skewX(-7deg);
-  }
+  border-radius: 4px;
 }
 
 @media (prefers-reduced-motion: reduce) {

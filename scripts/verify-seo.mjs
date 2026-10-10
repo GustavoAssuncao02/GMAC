@@ -36,7 +36,7 @@ try {
       assert.equal(await section.evaluate(el => getComputedStyle(el).opacity), '1', `${selector} opacity`)
     }
     assert.equal(await page.locator('#servicos h3').count(), 5)
-    assert.match(await page.locator('#servicos').innerText(), /CALDEIRARIA/)
+    assert.match(await page.locator('#servicos').innerText(), /caldeiraria/i)
     assert.match(await page.locator('#contato').innerText(), /3616-6626/)
     const brokenAnchors = await page.locator('a[href^="#"]').evaluateAll(links => links
       .map(link => link.getAttribute('href'))

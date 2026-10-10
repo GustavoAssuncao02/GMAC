@@ -6,6 +6,10 @@ import { metalSteps, stepProgress } from './steps'
 import { qualityChecks, qualityCheckProgress } from './quality'
 
 const copyOverrides: Record<string, { headline: string; body: string }> = {
+  hero_intro: {
+    headline: 'Do aço bruto\nà peça pronta.',
+    body: 'Acompanhe, etapa por etapa, como fabricamos um componente sob medida.',
+  },
   cut: {
     headline: 'O contorno ganha vida.',
     body: 'O laser abre o caminho com um corte limpo, rápido e controlado.',
@@ -19,8 +23,8 @@ const copyOverrides: Record<string, { headline: string; body: string }> = {
     body: 'A solda conecta as partes e consolida o conjunto.',
   },
   final: {
-    headline: 'DO PROJETO\nÀ PEÇA FINAL.',
-    body: 'ENGENHARIA QUE TRANSFORMA AÇO EM SOLUÇÃO. QUALIDADE EM CADA ETAPA PARA ENTREGAR O MELHOR RESULTADO AO SEU PROCESSO.',
+    headline: 'Do projeto\nà peça final.',
+    body: 'Qualidade em cada etapa para entregar o melhor resultado ao seu processo.',
   },
 }
 
@@ -72,6 +76,11 @@ export default function MetalScroll() {
     let from = effective, target = effective, transitionStart = 0
     let transitionDuration = 620
     const durationForStep = (index: number) => [620, 620, 3600, 2400, 3400, 3600, 4200, 3000, 3800, 1600][index]
+    // The sequence plays once by itself, and stops as soon as the visitor takes control.
+    let autoplay = !reduced
+    let engaged = false
+    let autoplayTimer = 0
+    const stopAutoplay = () => { autoplay = false; clearTimeout(autoplayTimer); autoplayTimer = 0 }
     let scene: Awaited<ReturnType<typeof import('./scene')['createMetalScene']>> | undefined
 
     function paint() {
@@ -130,6 +139,14 @@ export default function MetalScroll() {
       scene?.render(state, override !== null ? 1 : reduced ? 0 : Math.sin(Math.PI * t),
         override !== null && phaseOverride === null ? undefined : { step: displayStep, phase })
       if (override === null && !reduced && t < 1) schedule()
+      else if (autoplay && engaged && !autoplayTimer && override === null && !reduced && viewport.dataset.ready === 'true') {
+        if (stepIndex === metalSteps.length - 1) autoplay = false
+        // The two opening frames are still; give their copy time to be read.
+        else autoplayTimer = window.setTimeout(() => {
+          autoplayTimer = 0
+          if (autoplay && engaged) showStep(stepIndex + 1)
+        }, stepIndex < 2 ? 2200 : 1400)
+      }
     }
     function tick(now: number) {
       raf = 0
@@ -147,7 +164,7 @@ export default function MetalScroll() {
       scene?.resize(width, height)
       schedule()
     }
-    goToStep.current = index => {
+    function showStep(index: number) {
       override = null
       phaseOverride = null
       const next = Math.max(0, Math.min(metalSteps.length - 1, index))
@@ -158,10 +175,12 @@ export default function MetalScroll() {
       transitionDuration = durationForStep(next)
       schedule()
     }
+    goToStep.current = index => { stopAutoplay(); showStep(index) }
     advance.current = direction => goToStep.current(stepIndex + direction)
     function onPointerDown(event: PointerEvent) {
       if (reduced || !event.isPrimary || event.button !== 0 ||
         (event.target instanceof Element && event.target.closest('a, button'))) return
+      stopAutoplay()
       pointer = { id: event.pointerId, x: event.clientX, y: event.clientY }
       viewport.setPointerCapture(event.pointerId)
       viewport.dataset.dragging = 'true'
@@ -216,13 +235,20 @@ export default function MetalScroll() {
     const preload = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting) { void initialize(); preload.disconnect() }
     }, { rootMargin: '1000px' })
+    // Autoplay only advances while most of the stage is on screen.
+    const engagement = new IntersectionObserver(entries => {
+      engaged = entries[0].intersectionRatio >= 0.55
+      if (engaged) schedule()
+    }, { threshold: [0, 0.55] })
     preload.observe(element)
     observer.observe(element)
+    engagement.observe(viewport)
     const resize = new ResizeObserver(measure)
     resize.observe(element)
     resize.observe(viewport)
     const onMotionChange = () => {
       reduced = motion.matches
+      if (reduced) stopAutoplay()
       element.dataset.reduced = String(reduced)
       measure()
       paint()
@@ -242,6 +268,7 @@ export default function MetalScroll() {
     if (import.meta.env.DEV) window.__METALURGICA_SCROLL__ = {
       setProgress(value) {
         if (!Number.isFinite(value)) return
+        stopAutoplay()
         override = clamp(value)
         phaseOverride = null
         void initialize()
@@ -249,6 +276,7 @@ export default function MetalScroll() {
       },
       setStepPhase(index, phase) {
         if (!Number.isInteger(index) || index < 0 || index >= metalSteps.length || !Number.isFinite(phase)) return
+        stopAutoplay()
         stepIndex = index
         override = stepProgress(index)
         phaseOverride = clamp(phase)
@@ -261,6 +289,8 @@ export default function MetalScroll() {
     return () => {
       disposed = true
       cancelAnimationFrame(raf)
+      stopAutoplay()
+      engagement.disconnect()
       observer.disconnect()
       preload.disconnect()
       resize.disconnect()
