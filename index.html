@@ -4,6 +4,24 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="./assets/logo-gmac-round.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Run before the page renders so reloads cannot restore a saved scroll
+      // position or jump to a fragment. Fresh links retain their destination.
+      const navigation = performance.getEntriesByType('navigation')[0];
+      if (navigation && navigation.type === 'reload') {
+        history.scrollRestoration = 'manual';
+        if (location.hash) {
+          history.replaceState(history.state, '', location.pathname + location.search);
+        }
+        const resetScroll = () => window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        resetScroll();
+        document.addEventListener('DOMContentLoaded', resetScroll, { once: true });
+        window.addEventListener('pageshow', () => {
+          resetScroll();
+          requestAnimationFrame(resetScroll);
+        }, { once: true });
+      }
+    </script>
     <meta
       name="description"
       content="GMAC Metalúrgica em Feira de Santana, BA: caldeiraria, usinagem de peças e manutenção industrial. Conheça nossos serviços e solicite um orçamento."

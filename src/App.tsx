@@ -541,6 +541,9 @@ function HashScrollHandler() {
       })
     }
 
+    // The startup script clears fragments on reload; fresh deep links still
+    // need their target restored after React replaces the prerendered markup.
+    scrollToCurrentHash()
     window.addEventListener('hashchange', scrollToCurrentHash)
     return () => window.removeEventListener('hashchange', scrollToCurrentHash)
   }, [])

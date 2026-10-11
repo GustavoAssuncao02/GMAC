@@ -1,54 +1,64 @@
+import assert from 'node:assert/strict'
 import { pathToFileURL } from 'node:url'
 
-const playwrightPath =
-  'C:\\Users\\gustavo.silva\\AppData\\Local\\npm-cache\\_npx\\420ff84f11983ee5\\node_modules\\playwright\\index.mjs'
+// node scripts/verify-reload-top.mjs <playwright-entry> [url] [browsers]
+const { chromium } = await import(pathToFileURL(process.argv[2]).href)
+const base = process.argv[3] || 'http://127.0.0.1:4175/'
+const browsers = (process.argv[4] || 'chrome,brave').split(',')
 
-const { chromium } = await import(pathToFileURL(playwrightPath).href)
+for (const name of browsers) {
+  const browser = await chromium.launch(name === 'brave'
+    ? { executablePath: 'C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe', headless: true }
+    : { channel: name, headless: true })
+  try {
+    for (const [width, height] of [[1920, 1080], [3840, 2160], [390, 844]]) {
+      const page = await browser.newPage({ viewport: { width, height }, reducedMotion: 'no-preference' })
+      const errors = []
+      page.on('pageerror', error => errors.push(error.message))
+      const state = () => page.evaluate(() => ({ y: scrollY, hash: location.hash, search: location.search }))
+      const checkTop = async (scenario) => {
+        // Allow delayed native restoration, fonts and client rendering to settle.
+        await page.waitForTimeout(600)
+        const position = await state()
+        assert.ok(position.y <= 2, `${name} ${width} ${scenario}: ${JSON.stringify(position)}`)
+        assert.equal(position.hash, '', `${scenario}: reload clears the fragment`)
+      }
 
-const browser = await chromium.launch({ channel: 'msedge', headless: true })
-const page = await browser.newPage({ viewport: { width: 1365, height: 768 } })
-const base = 'http://127.0.0.1:5173/'
+      // Fresh deep links and links clicked inside the site retain their targets.
+      await page.goto(`${base}#orcamento`, { waitUntil: 'networkidle' })
+      await page.waitForFunction(() => scrollY > 1000)
+      assert.ok((await state()).y > 1000, 'Fresh quote deep link still works')
+      await page.reload({ waitUntil: 'networkidle' })
+      await checkTop('reload with fragment')
 
-try {
-  await page.goto(`${base}#orcamento`, { waitUntil: 'networkidle' })
-  await page.waitForTimeout(700)
+      await page.locator('#servicos article a').first().click()
+      await page.waitForFunction(() => scrollY > 1000 && location.hash === '#orcamento')
+      assert.equal((await state()).hash, '#orcamento')
+      assert.ok((await state()).y > 1000, 'Service CTA still scrolls to the quote')
+      assert.equal(await page.locator('#serviceType').inputValue(), 'Usinagem')
+      await page.reload({ waitUntil: 'networkidle' })
+      await checkTop('reload after clicking a link')
 
-  const direct = await page.evaluate(() => ({
-    y: Math.round(window.scrollY),
-    hash: window.location.hash,
-    href: window.location.href,
-  }))
+      await page.evaluate(() => {
+        history.replaceState(history.state, '', location.pathname + location.search)
+        scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' })
+      })
+      assert.ok((await state()).y > 1000)
+      await page.reload({ waitUntil: 'networkidle' })
+      await checkTop('reload without fragment')
 
-  if (direct.y > 2 || direct.hash) {
-    throw new Error(`direct hash load failed: ${JSON.stringify(direct)}`)
-  }
-
-  await page.locator('a[href="#orcamento"]').first().click()
-  await page.waitForTimeout(700)
-
-  const clicked = await page.evaluate(() => ({
-    y: Math.round(window.scrollY),
-    hash: window.location.hash,
-  }))
-
-  if (clicked.y < 1000 || clicked.hash !== '#orcamento') {
-    throw new Error(`anchor click failed: ${JSON.stringify(clicked)}`)
-  }
-
-  await page.reload({ waitUntil: 'networkidle' })
-  await page.waitForTimeout(700)
-
-  const reloaded = await page.evaluate(() => ({
-    y: Math.round(window.scrollY),
-    hash: window.location.hash,
-    href: window.location.href,
-  }))
-
-  if (reloaded.y > 2 || reloaded.hash) {
-    throw new Error(`reload hash failed: ${JSON.stringify(reloaded)}`)
-  }
-
-  console.log(JSON.stringify({ direct, clicked, reloaded }, null, 2))
-} finally {
-  await browser.close()
+      await page.evaluate(() => {
+        history.replaceState(history.state, '', `${location.pathname}?reload-test=1#contato`)
+        scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' })
+      })
+      await page.reload({ waitUntil: 'networkidle' })
+      await checkTop('reload with query and fragment')
+      assert.equal((await state()).search, '?reload-test=1', 'Query parameters are preserved')
+      await page.reload({ waitUntil: 'networkidle' })
+      await checkTop('repeat reload')
+      assert.deepEqual(errors, [], 'No browser errors')
+      console.log(`PASS: ${name} ${width}x${height}: deep link, anchor, plain reload, hash reload, query and repeat reload`)
+      await page.close()
+    }
+  } finally { await browser.close() }
 }
