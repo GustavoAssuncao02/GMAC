@@ -21,11 +21,25 @@
 }
 
 html {
-  /* Above Full HD the layout grows with the screen, so QHD and 4K keep the
-     1920x1080 composition. The height term keeps ultrawide screens in frame. */
+  /* Scale type and controls above Full HD. Content width is handled separately
+     by .gmac-shell so large screens also use their available horizontal space. */
   font-size: clamp(100%, min(0.8333vw, 1.4815vh), 200%);
   scroll-behavior: smooth;
   scroll-padding-top: 5.5rem;
+}
+
+/* Use proportional gutters on wide desktops instead of a fixed 80rem cap.
+   Every section, including the header and footer, shares these edges. */
+@media (min-width: 1600px) {
+  .gmac-shell {
+    width: 92%;
+    max-width: none;
+    padding-inline: 0;
+  }
+
+  .gmac-gallery {
+    grid-auto-rows: 15vw;
+  }
 }
 
 /* Lucide sizes are pixel attributes; these keep the icons in step with the text.

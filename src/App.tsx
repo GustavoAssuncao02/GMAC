@@ -230,7 +230,7 @@ const acceptedFileExtensions = ['pdf', 'dwg', 'dxf', 'jpg', 'jpeg', 'png']
 const maxFileSize = 10 * 1024 * 1024
 const maxTotalFileSize = 25 * 1024 * 1024
 
-const shell = 'mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10'
+const shell = 'gmac-shell mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10'
 const sectionSpacing = 'py-20 sm:py-24 lg:py-32'
 const sectionTitle =
   'mt-5 text-balance text-[2rem] font-medium leading-[1.08] tracking-[-0.03em] sm:text-[2.6rem] lg:text-5xl'
@@ -1179,7 +1179,7 @@ function Gallery() {
 
         <Reveal
           delay={0.1}
-          className="mt-12 grid auto-rows-[9.5rem] grid-cols-2 gap-3 sm:auto-rows-[13rem] sm:gap-4 lg:auto-rows-[14rem] lg:grid-cols-4"
+          className="gmac-gallery mt-12 grid auto-rows-[9.5rem] grid-cols-2 gap-3 sm:auto-rows-[13rem] sm:gap-4 lg:auto-rows-[14rem] lg:grid-cols-4"
         >
           {galleryItems.map((item) => (
             <figure
