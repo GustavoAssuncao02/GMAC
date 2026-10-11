@@ -1,15 +1,12 @@
 .quote-privacy-notice {
-  margin-block: 1.5rem 1rem;
-  padding: 1rem;
-  border: 1px solid #d5dee5;
-  border-radius: 4px;
-  background: #f5f8fa;
-  color: #334155;
-  font-size: .875rem;
-  line-height: 1.7;
+  margin-block: 1rem .75rem;
+  padding: 0 .15rem;
+  color: #64748b;
+  font-size: .75rem;
+  line-height: 1.55;
 }
-.quote-privacy-notice p + p { margin-top: .65rem; }
-.quote-privacy-notice a { color: #102f46; font-weight: 600; text-decoration: underline; text-underline-offset: .2em; }
+.quote-privacy-notice p + p { margin-top: .35rem; }
+.quote-privacy-notice a { color: #475569; font-weight: 600; text-decoration: underline; text-underline-offset: .16em; }
 .quote-privacy-notice a:focus-visible, .privacy-map a:focus-visible, .privacy-map button:focus-visible {
   outline: 2px solid #102f46;
   outline-offset: 4px;
