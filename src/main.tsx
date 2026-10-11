@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import '@fontsource-variable/inter/wght.css'
 import './index.css'
 import './landing.css'
+import './privacy.css'
 import App from './App'
 import Design2 from './Design2'
 

@@ -70,7 +70,8 @@ try {
   assert.equal(sitemap.status, 200)
   const xml = await sitemap.text()
   assert.match(xml, /<loc>https:\/\/gmacmetalurgica.com.br\/<\/loc>/)
-  assert.equal((xml.match(/<loc>/g) || []).length, 1)
+  const locations = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1])
+  assert.deepEqual(locations, [canonical, `${canonical}privacidade.html`, `${canonical}regras-orcamento.html`, `${canonical}acessibilidade.html`])
   console.log('PASS: robots.txt and sitemap.xml return HTTP 200 with the canonical domain.')
 } finally {
   await browser.close()

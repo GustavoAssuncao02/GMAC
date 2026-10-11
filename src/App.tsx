@@ -1,7 +1,10 @@
 import { submitQuoteRequest } from './quoteApi'
 import MetalScroll from './metal/MetalScroll'
+import PrivacyNotice from './PrivacyNotice'
+import PrivacyMap from './PrivacyMap'
 import {
   AlertCircle,
+  Accessibility,
   ArrowRight,
   ArrowUpRight,
   CheckCircle2,
@@ -13,6 +16,8 @@ import {
   Menu,
   MessageCircle,
   Phone,
+  Pause,
+  Play,
   ShieldCheck,
   Trash2,
   UploadCloud,
@@ -744,6 +749,8 @@ function RoundLogoCarousel({
   const velRef = useRef(0)
   const lastRef = useRef(0)
   const dragRef = useRef({ active: false, x: 0 })
+  const [paused, setPaused] = useState(false)
+  const pausedRef = useRef(false)
   const [size, setSize] = useState({ width: imageWidth, height: imageHeight })
 
   const items = images.length > 0 ? images : clientLogos
@@ -800,7 +807,7 @@ function RoundLogoCarousel({
       lastRef.current = now
       const frameDelta = Math.min(dt, 0.1)
 
-      if (!dragRef.current.active) {
+      if (!dragRef.current.active && !pausedRef.current) {
         if (Math.abs(velRef.current) > 0.01) {
           rotYRef.current += velRef.current * frameDelta
           velRef.current *= 0.94
@@ -850,7 +857,7 @@ function RoundLogoCarousel({
   return (
     <div
       ref={hostRef}
-      className="relative h-full min-h-[14.375rem] w-full touch-none overflow-hidden sm:min-h-[16.875rem] lg:min-h-[18.75rem]"
+      className="relative h-full min-h-[14.375rem] w-full touch-pan-y overflow-hidden sm:min-h-[16.875rem] lg:min-h-[18.75rem]"
       style={{
         cursor: drag ? 'grab' : 'default',
         perspective: `${perspective / 16}rem`,
@@ -922,6 +929,21 @@ function RoundLogoCarousel({
           </div>
         </div>
       </div>
+      <button
+        type="button"
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={() => {
+          const next = !pausedRef.current
+          pausedRef.current = next
+          setPaused(next)
+          velRef.current = 0
+        }}
+        aria-pressed={paused}
+        className="absolute bottom-1 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-2 rounded border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-gmac-ink shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gmac-ink"
+      >
+        {paused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}
+        {paused ? 'Retomar rotação' : 'Pausar rotação'}
+      </button>
     </div>
   )
 }
@@ -1210,11 +1232,11 @@ function Gallery() {
   )
 }
 
-function FieldError({ message }: { message?: string }) {
+function FieldError({ message, id }: { message?: string; id?: string }) {
   if (!message) return null
 
   return (
-    <p className="mt-2 flex items-start gap-2 text-sm font-medium text-red-700">
+    <p id={id} className="mt-2 flex items-start gap-2 text-sm font-medium text-red-700">
       <AlertCircle className="mt-0.5 h-4 w-4 flex-none" />
       {message}
     </p>
@@ -1244,11 +1266,12 @@ function TextField({
       <input
         id={id}
         aria-invalid={Boolean(error)}
+        aria-describedby={error ? `${id}-error` : undefined}
         aria-required={required}
         className={fieldInput}
         {...input}
       />
-      <FieldError message={error} />
+      <FieldError id={`${id}-error`} message={error} />
     </div>
   )
 }
@@ -1535,13 +1558,14 @@ function QuoteForm({ requestedService }: { requestedService: { option: string } 
                   value={form.description}
                   onChange={(event) => updateField('description', event.target.value)}
                   aria-invalid={Boolean(errors.description)}
+                  aria-describedby={errors.description ? 'description-error' : undefined}
                   aria-required
                   maxLength={1000}
                   rows={4}
                   className={`${fieldInput} resize-y leading-6`}
                   placeholder="Descreva a peça ou o serviço: medidas, tolerâncias, acabamento e o que mais for importante."
                 />
-                <FieldError message={errors.description} />
+                <FieldError id="description-error" message={errors.description} />
               </div>
 
               <div className="mt-5">
@@ -1586,9 +1610,10 @@ function QuoteForm({ requestedService }: { requestedService: { option: string } 
                   accept=".pdf,.dwg,.dxf,.jpg,.jpeg,.png"
                   onChange={handleFileInput}
                   aria-invalid={Boolean(errors.files)}
+                  aria-describedby={errors.files ? 'quoteFiles-error' : undefined}
                   className="sr-only"
                 />
-                <FieldError message={errors.files} />
+                <FieldError id="quoteFiles-error" message={errors.files} />
 
                 {files.length > 0 ? (
                   <ul className="mt-4 grid gap-3" aria-label="Arquivos anexados">
@@ -1725,6 +1750,7 @@ function QuoteForm({ requestedService }: { requestedService: { option: string } 
                 </div>
               ) : null}
 
+              <PrivacyNotice />
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -1744,7 +1770,7 @@ function QuoteForm({ requestedService }: { requestedService: { option: string } 
               </button>
               <p className="mt-4 text-center text-xs leading-5 text-slate-500">
                 <ShieldCheck className="mr-1.5 inline h-4 w-4 align-[-3px] text-gmac-ember" />
-                Campos com * são obrigatórios. Seus dados estão seguros conosco.
+                Campos com * são obrigatórios.
               </p>
             </div>
           </form>
@@ -1833,13 +1859,10 @@ function Contact() {
 
           <Reveal delay={0.1} className="flex flex-col">
             <div className="relative min-h-[20rem] flex-1 overflow-hidden rounded border border-slate-200 bg-gmac-paper sm:min-h-[24rem]">
-              <iframe
+              <PrivacyMap
                 title="Mapa da GMAC Metalúrgica"
                 src={gmacMapsEmbedUrl}
-                className="absolute inset-0 h-full w-full"
-                loading="lazy"
-                allowFullScreen
-                referrerPolicy="no-referrer-when-downgrade"
+                className="privacy-map--fill"
               />
             </div>
             <a
@@ -1920,6 +1943,13 @@ function Footer() {
       </div>
 
       <div className="border-t border-white/10">
+        <nav aria-label="Informações legais" className={`${shell} flex flex-wrap items-center gap-x-6 gap-y-3 pt-6 text-sm text-white/80`}>
+          <a href={assetUrl('privacidade.html')} className="underline underline-offset-4 hover:text-white">Política de Privacidade</a>
+          <a href={assetUrl('regras-orcamento.html')} className="underline underline-offset-4 hover:text-white">Regras da solicitação</a>
+          <a href={assetUrl('acessibilidade.html')} className="inline-flex items-center gap-2 underline underline-offset-4 hover:text-white">
+            <Accessibility size={20} aria-hidden="true" /> Acessibilidade
+          </a>
+        </nav>
         <p className={`${shell} py-6 text-sm text-white/50`}>
           © {new Date().getFullYear()} GMAC Metalúrgica. Todos os direitos reservados.
         </p>
