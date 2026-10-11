@@ -30,7 +30,7 @@ A evidência técnica local desta inspeção está em `artifacts/public-privacy-
 - Documentos em HTML acessíveis sem JavaScript, com dados coletados, finalidades, destinatários por categoria, retenção, direitos e contatos.
 - Retenção de até 30 dias para solicitações sem contratação; documentos contratuais e obrigações legais são tratados separadamente.
 - Google Maps carregado apenas após ação expressa do visitante, com informação sobre o serviço externo; o endereço permanece disponível em texto.
-- Botão de pausa/retomada do carrossel, preservando autoplay por padrão, e mensagens de erro do formulário associadas aos campos.
+- Mensagens de erro do formulário associadas aos campos. O carrossel mantém rotação automática; o botão de pausa foi removido conforme solicitado pelo responsável.
 - Links legais no rodapé e página de informações de acessibilidade. A existência dessa página não equivale a certificação de acessibilidade.
 - Os mesmos avisos e mapa sob escolha foram aplicados ao componente da proposta `/design2`.
 

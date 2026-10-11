@@ -16,8 +16,6 @@ import {
   Menu,
   MessageCircle,
   Phone,
-  Pause,
-  Play,
   ShieldCheck,
   Trash2,
   UploadCloud,
@@ -749,8 +747,6 @@ function RoundLogoCarousel({
   const velRef = useRef(0)
   const lastRef = useRef(0)
   const dragRef = useRef({ active: false, x: 0 })
-  const [paused, setPaused] = useState(false)
-  const pausedRef = useRef(false)
   const [size, setSize] = useState({ width: imageWidth, height: imageHeight })
 
   const items = images.length > 0 ? images : clientLogos
@@ -807,7 +803,7 @@ function RoundLogoCarousel({
       lastRef.current = now
       const frameDelta = Math.min(dt, 0.1)
 
-      if (!dragRef.current.active && !pausedRef.current) {
+      if (!dragRef.current.active) {
         if (Math.abs(velRef.current) > 0.01) {
           rotYRef.current += velRef.current * frameDelta
           velRef.current *= 0.94
@@ -929,21 +925,6 @@ function RoundLogoCarousel({
           </div>
         </div>
       </div>
-      <button
-        type="button"
-        onPointerDown={(event) => event.stopPropagation()}
-        onClick={() => {
-          const next = !pausedRef.current
-          pausedRef.current = next
-          setPaused(next)
-          velRef.current = 0
-        }}
-        aria-pressed={paused}
-        className="absolute bottom-1 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-2 rounded border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-gmac-ink shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gmac-ink"
-      >
-        {paused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}
-        {paused ? 'Retomar rotação' : 'Pausar rotação'}
-      </button>
     </div>
   )
 }

@@ -22,19 +22,12 @@ try {
     // Inspect when the embed would connect, without needing Google's live UI.
     await page.route('https://www.google.com/maps**', route => route.fulfill({ contentType: 'text/html', body: '<html lang="pt-BR"><body>Mapa externo de teste</body></html>' }))
     await page.goto(base, { waitUntil: 'networkidle' })
-    const pause = page.getByRole('button', { name: 'Pausar rotação' })
-    await pause.scrollIntoViewIfNeeded()
-    await pause.focus()
-    await page.keyboard.press('Enter')
-    const resume = page.getByRole('button', { name: 'Retomar rotação' })
-    assert.equal(await resume.getAttribute('aria-pressed'), 'true')
+    await page.locator('#clientes').scrollIntoViewIfNeeded()
+    assert.equal(await page.getByRole('button', { name: /Pausar rotação|Retomar rotação/ }).count(), 0)
     const ring = page.locator('#clientes [aria-label^="Carrossel"] > div > div > div')
-    const stopped = await ring.evaluate(element => element.style.transform)
+    const initialRotation = await ring.evaluate(element => element.style.transform)
     await page.waitForTimeout(300)
-    assert.equal(await ring.evaluate(element => element.style.transform), stopped, 'Pause stops the animation')
-    await page.keyboard.press('Space')
-    await page.waitForTimeout(300)
-    assert.notEqual(await ring.evaluate(element => element.style.transform), stopped, 'Keyboard resumes autoplay')
+    assert.notEqual(await ring.evaluate(element => element.style.transform), initialRotation, 'Carousel keeps rotating automatically')
 
     const notice = page.locator('#orcamento .quote-privacy-notice')
     assert.equal(await notice.count(), 1)
@@ -72,9 +65,9 @@ try {
     assert.deepEqual(errors, [])
     await notice.scrollIntoViewIfNeeded()
     if ([390, 1440].includes(width)) await page.screenshot({ path: `artifacts/privacy/${width}-form.png` })
-    reports.push({ width, noThirdPartyBeforeChoice: true, accessibleFormErrors: true, pauseAndResume: true, formPreserved: true, errors })
+    reports.push({ width, noThirdPartyBeforeChoice: true, accessibleFormErrors: true, autoplay: true, formPreserved: true, errors })
     await context.close()
-    console.log(`PASS: ${width}px — notice, keyboard pause, form errors, map choice and no overflow`)
+    console.log(`PASS: ${width}px — notice, autoplay, form errors, map choice and no overflow`)
   }
 
   // Legal information must work without JavaScript and with native navigation.
