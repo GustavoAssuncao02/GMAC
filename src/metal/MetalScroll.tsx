@@ -52,12 +52,13 @@ export default function MetalScroll() {
   useEffect(() => {
     const element = section.current!
     const viewport = stage.current!
-    const motion = matchMedia('(prefers-reduced-motion: reduce)')
-    let reduced = motion.matches
+    // Each operation plays only on request, so it stays available with reduced motion.
+    // Without WebGL the section shows the finished piece as a static composition.
+    let fallback = false
     let disposed = false
     let override: number | null = null
     let phaseOverride: number | null = null
-    let effective = reduced ? 1 : 0
+    let effective = 0
     let state = stateAt(effective)
     let width = 1, height = 1
     let raf = 0
@@ -80,16 +81,16 @@ export default function MetalScroll() {
       const now = performance.now()
       const t = clamp((now - transitionStart) / transitionDuration)
       const ease = t * t * (3 - 2 * t)
-      effective = reduced ? 1 : override ?? from + (target - from) * ease
+      effective = fallback ? 1 : override ?? from + (target - from) * ease
       state = stateAt(effective)
       const mobile = width < 768
-      const displayStep = reduced ? metalSteps.length - 1 : stepIndex
-      const previewFrames = override !== null && phaseOverride === null && !reduced
+      const displayStep = fallback ? metalSteps.length - 1 : stepIndex
+      const previewFrames = override !== null && phaseOverride === null && !fallback
       const copyChanged = displayStep !== paintedStep || previewFrames || wasPreview
       if (copyChanged) for (const [name, block] of Object.entries(state.copy_blocks)) {
         const node = copyRefs.current[name]
         if (!node) continue
-        const currentStep = reduced ? metalSteps.length - 1 : stepIndex
+        const currentStep = fallback ? metalSteps.length - 1 : stepIndex
         const isActive = name === metalSteps[currentStep].copy || (name === 'cta' && currentStep === metalSteps.length - 1)
         const alpha = previewFrames ? block.opacity : Number(isActive)
         node.style.opacity = String(alpha)
@@ -105,7 +106,7 @@ export default function MetalScroll() {
       }
       if (previous.current) previous.current.disabled = displayStep === 0
       if (nextButton.current) nextButton.current.disabled = displayStep === metalSteps.length - 1
-      const phase = reduced ? 1 : phaseOverride ?? t
+      const phase = fallback ? 1 : phaseOverride ?? t
       let verified = 0
       if (displayStep === 8 || paintedStep === 8 || paintedStep === -1) qualityRows.current.forEach((row, index) => {
         if (!row) return
@@ -127,9 +128,9 @@ export default function MetalScroll() {
       paintedStep = displayStep
       wasPreview = previewFrames
       viewport.style.setProperty('--metal-light', '.32')
-      scene?.render(state, override !== null ? 1 : reduced ? 0 : Math.sin(Math.PI * t),
+      scene?.render(state, override !== null ? 1 : fallback ? 0 : Math.sin(Math.PI * t),
         override !== null && phaseOverride === null ? undefined : { step: displayStep, phase })
-      if (override === null && !reduced && t < 1) schedule()
+      if (override === null && !fallback && t < 1) schedule()
     }
     function tick(now: number) {
       raf = 0
@@ -139,7 +140,7 @@ export default function MetalScroll() {
       paint()
     }
     function schedule() {
-      if (!raf && !document.hidden && (active || override !== null || reduced)) raf = requestAnimationFrame(tick)
+      if (!raf && !document.hidden && (active || override !== null || fallback)) raf = requestAnimationFrame(tick)
     }
     function measure() {
       width = viewport.clientWidth
@@ -160,7 +161,7 @@ export default function MetalScroll() {
     }
     advance.current = direction => goToStep.current(stepIndex + direction)
     function onPointerDown(event: PointerEvent) {
-      if (reduced || !event.isPrimary || event.button !== 0 ||
+      if (fallback || !event.isPrimary || event.button !== 0 ||
         (event.target instanceof Element && event.target.closest('a, button'))) return
       pointer = { id: event.pointerId, x: event.clientX, y: event.clientY }
       viewport.setPointerCapture(event.pointerId)
@@ -177,7 +178,7 @@ export default function MetalScroll() {
       }
     }
     function onKeyDown(event: KeyboardEvent) {
-      if (reduced || event.altKey || event.ctrlKey || event.metaKey ||
+      if (fallback || event.altKey || event.ctrlKey || event.metaKey ||
         (event.target instanceof Element && event.target.closest('input, textarea, select, [contenteditable="true"]'))) return
       const direction = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0
       if (!direction) return
@@ -201,34 +202,26 @@ export default function MetalScroll() {
         // A static product and usable final CTA remain available without WebGL.
         console.warn('A visualização 3D está indisponível; exibindo composição estática.', error)
         viewport.dataset.fallback = 'true'
-        element.dataset.reduced = 'true'
-        reduced = true
+        fallback = true
         measure()
         paint()
       }
     }
     const observer = new IntersectionObserver(entries => {
-      active = entries[0].isIntersecting
+      // Quick exits and re-entries arrive together; only the latest entry is current.
+      active = entries[entries.length - 1].isIntersecting
       if (active) { measure(); void initialize(); schedule() }
       else { cancelAnimationFrame(raf); raf = 0 }
     }, { rootMargin: '0px' })
     // Load shaders ahead of entry; render only while the section is on screen.
     const preload = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) { void initialize(); preload.disconnect() }
+      if (entries.some(entry => entry.isIntersecting)) { void initialize(); preload.disconnect() }
     }, { rootMargin: '1000px' })
     preload.observe(element)
     observer.observe(element)
     const resize = new ResizeObserver(measure)
     resize.observe(element)
     resize.observe(viewport)
-    const onMotionChange = () => {
-      reduced = motion.matches
-      element.dataset.reduced = String(reduced)
-      measure()
-      paint()
-    }
-    element.dataset.reduced = String(reduced)
-    motion.addEventListener('change', onMotionChange)
     window.addEventListener('resize', measure)
     viewport.addEventListener('pointerdown', onPointerDown)
     viewport.addEventListener('pointerup', endPointer)
@@ -264,7 +257,6 @@ export default function MetalScroll() {
       observer.disconnect()
       preload.disconnect()
       resize.disconnect()
-      motion.removeEventListener('change', onMotionChange)
       window.removeEventListener('resize', measure)
       viewport.removeEventListener('pointerdown', onPointerDown)
       viewport.removeEventListener('pointerup', endPointer)

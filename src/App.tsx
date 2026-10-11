@@ -765,7 +765,9 @@ function RoundLogoCarousel({
     if (!host) return
 
     const measure = () => {
-      const nextWidth = Math.min(imageWidth, Math.max(154, Math.round(host.clientWidth * 0.46)))
+      // Sizes are authored for a 16px root and follow its wide-screen scale.
+      const scale = parseFloat(getComputedStyle(document.documentElement).fontSize) / 16
+      const nextWidth = Math.min(Math.round(imageWidth * scale), Math.max(154, Math.round(host.clientWidth * 0.46)))
       const nextHeight = Math.round(nextWidth * (imageHeight / imageWidth))
       setSize((current) =>
         current.width === nextWidth && current.height === nextHeight
@@ -844,10 +846,10 @@ function RoundLogoCarousel({
   return (
     <div
       ref={hostRef}
-      className="relative h-full min-h-[230px] w-full touch-none overflow-hidden sm:min-h-[270px] lg:min-h-[300px]"
+      className="relative h-full min-h-[14.375rem] w-full touch-none overflow-hidden sm:min-h-[16.875rem] lg:min-h-[18.75rem]"
       style={{
         cursor: drag ? 'grab' : 'default',
-        perspective: `${perspective}px`,
+        perspective: `${perspective / 16}rem`,
       }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -956,7 +958,7 @@ function Clients() {
           whileInView={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.75, ease: 'easeOut' }}
-          className="relative min-h-[230px] overflow-hidden sm:min-h-[270px] lg:min-h-[300px]"
+          className="relative min-h-[14.375rem] overflow-hidden sm:min-h-[16.875rem] lg:min-h-[18.75rem]"
         >
           <div className="relative h-full">
             <RoundLogoCarousel images={clientLogos} />

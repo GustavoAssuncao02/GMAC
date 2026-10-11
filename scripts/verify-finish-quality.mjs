@@ -57,8 +57,7 @@ try {
   }
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.waitForTimeout(200)
-  assert.equal(await canvas.getAttribute('data-polishing'), 'false')
-  assert.equal(await canvas.getAttribute('data-quality-checked'), '0')
+  assert.ok(await page.locator('.metal-step-nav').isVisible(), 'reduced motion keeps the steps available')
   assert.deepEqual(errors, [])
   console.log('PASS: rotating polisher on ring and both flanges, progressive checklist, replay, exit, resting frame, desktop/mobile, reduced motion, no browser errors.')
 } finally { await browser.close() }

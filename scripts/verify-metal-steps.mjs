@@ -81,7 +81,7 @@ try {
   await page.evaluate(() => scrollTo(0, document.querySelector('#transformacao').offsetTop))
   await page.waitForTimeout(250)
   assert.ok(await page.locator('#transformacao').evaluate(el => el.offsetHeight <= innerHeight * 1.2))
-  assert.equal(await page.locator('.metal-canvas').getAttribute('data-bloom'), '0.000')
+  assert.ok(await page.locator('.metal-step-nav').isVisible(), 'reduced motion keeps the steps available')
   assert.deepEqual(errors, [])
   console.log('PASS: wheel forward/back, direct navigation, isolated raw material, cutting, bending, assembly, stable text, sharp resting states, exit, mobile, reduced motion.')
 } finally { await browser.close() }

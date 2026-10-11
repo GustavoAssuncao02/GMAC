@@ -62,8 +62,7 @@ try {
   }
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.waitForTimeout(200)
-  assert.equal(await page.locator('.metal-canvas').getAttribute('data-bolt-count'), '4')
-  assert.equal(await page.locator('.metal-canvas').getAttribute('data-bloom'), '0.000')
+  assert.ok(await page.locator('.metal-step-nav').isVisible(), 'reduced motion keeps the steps available')
   assert.deepEqual(errors, [])
   console.log('PASS: separated cut parts, corrected bends, progressive welds, four sequential holes, finish, four seated screws, reverse navigation, frozen scene, responsive layouts and reduced motion.')
 } finally { await browser.close() }

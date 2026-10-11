@@ -25,8 +25,14 @@ um bloco é mostrado por etapa. O material usa mapas de cor, rugosidade e relevo
 de aço escovado. O polimento mistura progressivamente os mapas 1K fornecidos
 em `Poliigon_MetalSteelBrushed_7174.zip`, convertidos para WebP em `public/assets/steel`.
 Faíscas recebem bloom e luz local sem desfocar o conjunto.
-Em redução de movimento, fica no estado final
-com altura normal. Sem WebGL, há uma composição SVG estática e CTA funcional.
+A preferência de movimento reduzido do sistema não bloqueia a seção: nada
+toca sozinho e cada operação só roda a pedido do visitante, então as etapas
+continuam disponíveis. Sem WebGL, há uma composição SVG estática e CTA
+funcional, sem setas nem etapas.
+
+Os tamanhos do palco estão em `rem`. Acima de Full HD o tamanho base da página
+cresce com a tela (`html` em `landing.css`), então QHD e 4K mantêm a mesma
+composição de 1920×1080. Até Full HD nada muda.
 
 A matéria-prima para no frame 8. A revisão do mandril segue a foto fornecida
 em 18/09/2026: corpo circular elevado, abertura com guias internas e duas abas.
