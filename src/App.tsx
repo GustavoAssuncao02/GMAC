@@ -20,6 +20,7 @@ import {
   X,
 } from 'lucide-react'
 import {
+  MotionConfig,
   motion,
   useReducedMotion,
   useScroll,
@@ -405,12 +406,15 @@ function Reveal({
   children,
   className = '',
   delay = 0,
+  respectReducedMotion = true,
 }: {
   children: ReactNode
   className?: string
   delay?: number
+  respectReducedMotion?: boolean
 }) {
-  const reduceMotion = useReducedMotion()
+  const systemReducedMotion = useReducedMotion()
+  const reduceMotion = respectReducedMotion && systemReducedMotion
 
   return (
     <motion.div
@@ -733,7 +737,6 @@ function RoundLogoCarousel({
   cornerRadius?: number
   innerDim?: number
 }) {
-  const reduceMotion = useReducedMotion()
   const hostRef = useRef<HTMLDivElement>(null)
   const ringRef = useRef<HTMLDivElement>(null)
   const rafRef = useRef<number | null>(null)
@@ -792,8 +795,6 @@ function RoundLogoCarousel({
     lastRef.current = 0
     applyRingTransform()
 
-    if (reduceMotion) return
-
     const draw = (now: number) => {
       const dt = lastRef.current ? (now - lastRef.current) / 1000 : 0
       lastRef.current = now
@@ -818,7 +819,7 @@ function RoundLogoCarousel({
         cancelAnimationFrame(rafRef.current)
       }
     }
-  }, [degPerSec, radius, reduceMotion])
+  }, [degPerSec, radius])
 
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (!drag) return
@@ -858,6 +859,7 @@ function RoundLogoCarousel({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
+      onLostPointerCapture={onPointerUp}
       aria-label="Carrossel de logos dos principais clientes"
     >
       <div className="absolute inset-0 flex items-center justify-center">
@@ -925,8 +927,6 @@ function RoundLogoCarousel({
 }
 
 function Clients() {
-  const reduceMotion = useReducedMotion()
-
   return (
     <section
       id="clientes"
@@ -938,8 +938,8 @@ function Clients() {
 
       <div className={`${shell} relative grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center`}>
         <motion.div
-          initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, x: -24 }}
-          whileInView={reduceMotion ? undefined : { opacity: 1, x: 0 }}
+          initial={import.meta.env.SSR ? false : { opacity: 0, x: -24 }}
+          whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.7, ease: 'easeOut' }}
           className="max-w-2xl"
@@ -957,8 +957,8 @@ function Clients() {
         </motion.div>
 
         <motion.div
-          initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, scale: 0.96 }}
-          whileInView={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
+          initial={import.meta.env.SSR ? false : { opacity: 0, scale: 0.96 }}
+          whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.75, ease: 'easeOut' }}
           className="relative min-h-[14.375rem] overflow-hidden sm:min-h-[16.875rem] lg:min-h-[18.75rem]"
@@ -1061,8 +1061,6 @@ function Services({ onRequestQuote }: { onRequestQuote: (option: string) => void
 }
 
 function ProcessTimeline() {
-  const reduceMotion = useReducedMotion()
-
   return (
     <section
       id="processo"
@@ -1072,7 +1070,7 @@ function ProcessTimeline() {
       <div className="absolute -left-14 top-16 hidden h-44 w-44 rotate-45 border-[18px] border-gmac-orange/8 sm:block" />
       <div className="absolute bottom-14 right-16 hidden h-36 w-36 rotate-45 border border-gmac-cyan/18 sm:block" />
 
-      <Reveal className={`${shell} relative`}>
+      <Reveal className={`${shell} relative`} respectReducedMotion={false}>
         <div className="max-w-4xl">
           <div className="mb-6 inline-flex items-center gap-3 rounded-md border border-white/12 bg-white/[0.08] px-4 py-2">
             <Workflow size={18} className="text-gmac-orange" />
@@ -1100,8 +1098,8 @@ function ProcessTimeline() {
           <div className="relative hidden xl:block">
             <div className="absolute left-8 right-8 top-7 h-px bg-white/14" />
             <motion.div
-              initial={import.meta.env.SSR || reduceMotion ? false : { scaleX: 0 }}
-              whileInView={reduceMotion ? undefined : { scaleX: 1 }}
+              initial={import.meta.env.SSR ? false : { scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
               viewport={{ once: true, amount: 0.4 }}
               transition={{ duration: 1.1 }}
               className="absolute left-8 right-8 top-7 h-px origin-left bg-gmac-orange"
@@ -1111,8 +1109,8 @@ function ProcessTimeline() {
               {processSteps.map((step, index) => (
                 <motion.li
                   key={step.number}
-                  initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, y: 26 }}
-                  whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+                  initial={import.meta.env.SSR ? false : { opacity: 0, y: 26 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.45 }}
                   transition={{ duration: 0.58, delay: index * 0.08 }}
                   className="relative"
@@ -1138,8 +1136,8 @@ function ProcessTimeline() {
             {processSteps.map((step, index) => (
               <motion.li
                 key={step.number}
-                initial={import.meta.env.SSR || reduceMotion ? false : { opacity: 0, x: -20 }}
-                whileInView={reduceMotion ? undefined : { opacity: 1, x: 0 }}
+                initial={import.meta.env.SSR ? false : { opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, amount: 0.4 }}
                 transition={{ duration: 0.55, delay: index * 0.05 }}
                 className="relative grid grid-cols-[2.5rem_1fr] gap-3 sm:grid-cols-[3rem_1fr] sm:gap-4"
@@ -1940,9 +1938,13 @@ function App() {
       <Hero />
       <MetalScroll />
       <About />
-      <Clients />
+      <MotionConfig reducedMotion="never">
+        <Clients />
+      </MotionConfig>
       <Services onRequestQuote={(option) => setRequestedService({ option })} />
-      <ProcessTimeline />
+      <MotionConfig reducedMotion="never">
+        <ProcessTimeline />
+      </MotionConfig>
       <Gallery />
       <QuoteForm requestedService={requestedService} />
       <Contact />
