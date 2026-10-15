@@ -1740,11 +1740,11 @@ function QuoteForm({ requestedService }: { requestedService: { option: string } 
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    Enviando solicitação
+                    <span key="enviando">Enviando solicitação</span>
                   </>
                 ) : (
                   <>
-                    Enviar solicitação
+                    <span key="enviar">Enviar solicitação</span>
                     <ArrowRight size={18} />
                   </>
                 )}
