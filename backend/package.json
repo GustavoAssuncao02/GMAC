@@ -1,0 +1,21 @@
+{
+  "name": "gmac-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "dev": "node --watch --env-file-if-exists=.env src/server.js",
+    "test": "node --test",
+    "check:smtp": "node --env-file-if-exists=.env src/check-smtp.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "multer": "^2.4.0",
+    "nodemailer": "^10.0.12"
+  }
+}
