@@ -74,7 +74,7 @@ const services = [
     description:
       'Fabricação e usinagem de componentes e peças conforme necessidade do projeto.',
     image: assetUrl('assets/gmac-real/usinagem-cnc.webp'),
-    imageAlt: 'Ferramenta de usinagem trabalhando em componente metálico',
+    imageAlt: 'Fresa de centro de usinagem CNC trabalhando em componente metálico',
   },
   {
     title: 'Caldeiraria',
@@ -82,7 +82,7 @@ const services = [
     description:
       'Fabricação e montagem de estruturas e componentes metálicos.',
     image: assetUrl('assets/gmac-real/caldeiraria.webp'),
-    imageAlt: 'Soldagem de estrutura cilíndrica na oficina',
+    imageAlt: 'Caldeiraria: soldagem de estrutura cilíndrica de aço na oficina da GMAC',
   },
   {
     title: 'Manutenção industrial',
@@ -90,7 +90,7 @@ const services = [
     description:
       'Serviços voltados à manutenção e continuidade da operação industrial.',
     image: assetUrl('assets/gmac-real/manutencao.webp'),
-    imageAlt: 'Profissional da GMAC ajustando equipamento industrial',
+    imageAlt: 'Profissional da GMAC ajustando peça em torno de grande porte',
   },
   {
     title: 'Corte a laser',
@@ -104,7 +104,7 @@ const services = [
     quoteOption: 'Serviço externo',
     description: 'Integração e acompanhamento de serviços complementares.',
     image: assetUrl('assets/gmac-real/servicos-tecnicos.webp'),
-    imageAlt: 'Profissional conferindo um componente na bancada',
+    imageAlt: 'Profissional da GMAC conferindo componente com micrômetro na bancada',
   },
 ]
 
@@ -149,36 +149,42 @@ const processSteps = [
 const galleryItems = [
   {
     title: 'Usinagem de precisão',
+    alt: 'Peça de aço com cavidades usinadas na mesa de um centro de usinagem CNC',
     label: 'Usinagem',
     image: assetUrl('assets/gmac-real/componente-usinado.webp'),
     className: 'col-span-2 row-span-2',
   },
   {
     title: 'Medição técnica',
+    alt: 'Medição de eixo com paquímetro digital durante a usinagem no torno',
     label: 'Precisão',
     image: assetUrl('assets/gmac-real/medicao.webp'),
     className: '',
   },
   {
     title: 'Acabamento metálico',
+    alt: 'Eixo de aço usinado com rosca e acabamento polido',
     label: 'Acabamento',
     image: assetUrl('assets/gmac-real/eixo-usinado.webp'),
     className: '',
   },
   {
     title: 'Caldeiraria industrial',
+    alt: 'Soldador da GMAC soldando flange em tubo de aço',
     label: 'Caldeiraria',
     image: assetUrl('assets/gmac-real/soldagem.webp'),
     className: 'col-span-2',
   },
   {
     title: 'Tecnologia CNC',
+    alt: 'Torno CNC ROMI na oficina da GMAC Metalúrgica em Feira de Santana',
     label: 'Estrutura',
     image: assetUrl('assets/gmac-real/torno-cnc.webp'),
     className: 'lg:col-span-2',
   },
   {
     title: 'Equipe e operação',
+    alt: 'Torneiro da GMAC usinando peça em torno mecânico',
     label: 'Equipe',
     image: assetUrl('assets/gmac-real/operacao-torno.webp'),
     className: 'lg:col-span-2',
@@ -188,9 +194,9 @@ const galleryItems = [
 const clientLogos = [
   { src: assetUrl('assets/clientes/belgo-bekaert.png'), alt: 'Belgo Bekaert', width: 1875, height: 639 },
   { src: assetUrl('assets/clientes/sapelba.webp'), alt: 'Sapelba', width: 1011, height: 300 },
-  { src: assetUrl('assets/clientes/nestle.png'), alt: 'Nestlé', width: 3499, height: 944 },
-  { src: assetUrl('assets/clientes/placo.png'), alt: 'Placo', width: 2952, height: 1182 },
-  { src: assetUrl('assets/clientes/vipal-borrachas.png'), alt: 'VIPAL Borrachas', width: 1000, height: 371 },
+  { src: assetUrl('assets/clientes/nestle.webp'), alt: 'Nestlé', width: 800, height: 216 },
+  { src: assetUrl('assets/clientes/placo.webp'), alt: 'Placo', width: 800, height: 320 },
+  { src: assetUrl('assets/clientes/vipal-borrachas.webp'), alt: 'VIPAL Borrachas', width: 800, height: 297 },
 ]
 
 const footerLinks = [
@@ -432,10 +438,13 @@ function Reveal({
   )
 }
 
+// The badge is shown at 3–4rem; the root font doubles at most above Full HD.
 function LogoBadge({ className }: { className: string }) {
   return (
     <img
       src={assetUrl('assets/logo-gmac-badge.webp')}
+      srcSet={`${assetUrl('assets/logo-gmac-badge-192.webp')} 192w, ${assetUrl('assets/logo-gmac-badge.webp')} 512w`}
+      sizes="(min-width: 1921px) 128px, 64px"
       alt="GMAC Metalúrgica"
       className={`block select-none ${className}`}
       width={512}
@@ -700,7 +709,7 @@ function About() {
               decoding="async"
               width={1280}
               height={960}
-              alt="Equipe GMAC trabalhando em máquina na oficina"
+              alt="Profissional da GMAC usinando engrenagem na oficina em Feira de Santana"
               className="aspect-[4/3] w-full rounded object-cover"
             />
             <figcaption className="mt-4 text-sm leading-6 text-slate-500">
@@ -1135,7 +1144,7 @@ function ProcessTimeline() {
           </div>
 
           <ol className="relative grid gap-4 xl:hidden">
-            <div className="absolute bottom-8 left-6 top-8 w-px bg-white/14" />
+            <li aria-hidden="true" className="absolute bottom-8 left-6 top-8 w-px bg-white/14" />
             {processSteps.map((step, index) => (
               <motion.li
                 key={step.number}
@@ -1192,7 +1201,7 @@ function Gallery() {
             >
               <img
                 src={item.image}
-                alt={item.title}
+                alt={item.alt}
                 loading="lazy"
                 decoding="async"
                 className="h-full w-full object-cover transition duration-700 group-hover:scale-105"

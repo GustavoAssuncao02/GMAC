@@ -209,15 +209,22 @@ export default function MetalScroll() {
     }
     const observer = new IntersectionObserver(entries => {
       // Quick exits and re-entries arrive together; only the latest entry is current.
-      active = entries[entries.length - 1].isIntersecting
-      if (active) { measure(); void initialize(); schedule() }
+      const entry = entries[entries.length - 1]
+      active = entry.isIntersecting
+      // Touching the bottom edge below the hero also counts as intersecting; load only once part of it shows.
+      if (active) { measure(); if (entry.intersectionRect.height > 0) void initialize(); schedule() }
       else { cancelAnimationFrame(raf); raf = 0 }
     }, { rootMargin: '0px' })
     // Load shaders ahead of entry; render only while the section is on screen.
     const preload = new IntersectionObserver(entries => {
       if (entries.some(entry => entry.isIntersecting)) { void initialize(); preload.disconnect() }
     }, { rootMargin: '1000px' })
-    preload.observe(element)
+    // Shader compilation blocks the main thread for seconds on phones, so the
+    // look-ahead starts with the visitor's first interaction, not with page load.
+    const intentEvents = ['scroll', 'wheel', 'touchstart', 'pointerdown', 'keydown'] as const
+    const stopWaitingForIntent = () => intentEvents.forEach(type => window.removeEventListener(type, onIntent))
+    function onIntent() { stopWaitingForIntent(); preload.observe(element) }
+    intentEvents.forEach(type => window.addEventListener(type, onIntent, { passive: true }))
     observer.observe(element)
     const resize = new ResizeObserver(measure)
     resize.observe(element)
@@ -256,6 +263,7 @@ export default function MetalScroll() {
       cancelAnimationFrame(raf)
       observer.disconnect()
       preload.disconnect()
+      stopWaitingForIntent()
       resize.disconnect()
       window.removeEventListener('resize', measure)
       viewport.removeEventListener('pointerdown', onPointerDown)
@@ -314,7 +322,8 @@ export default function MetalScroll() {
           <button ref={nextButton} type="button" aria-label="Próxima etapa" onClick={() => advance.current(1)}><ArrowRight size={20} /></button>
         </div>
         <nav className="metal-step-nav" aria-label="Etapas da fabricação">
-          {metalSteps.map((step, index) => <button key={step.copy} ref={node => { stepButtons.current[index] = node }} type="button" aria-label={step.name} onClick={() => goToStep.current(index)}><span>{index === 0 ? '●' : String(index).padStart(2, '0')}</span><small>{step.name}</small></button>)}
+          {/* The accessible name starts with the visible step number; the space between items is not rendered in the flex row. */}
+          {metalSteps.map((step, index) => <button key={step.copy} ref={node => { stepButtons.current[index] = node }} type="button" aria-label={index === 0 ? step.name : `${String(index).padStart(2, '0')} ${step.name}`} onClick={() => goToStep.current(index)}><span>{index === 0 ? '●' : String(index).padStart(2, '0')}</span>{' '}<small>{step.name}</small></button>)}
         </nav>
       </div>
     </section>

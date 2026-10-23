@@ -1,9 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://gmacmetalurgica.com.br/</loc>
+    <lastmod>2026-10-22</lastmod>
+    <image:image><image:loc>https://gmacmetalurgica.com.br/assets/gmac-real/hero-soldagem-1920.webp</image:loc></image:image>
+    <image:image><image:loc>https://gmacmetalurgica.com.br/assets/gmac-real/equipe-oficina.webp</image:loc></image:image>
+    <image:image><image:loc>https://gmacmetalurgica.com.br/assets/gmac-real/usinagem-cnc.webp</image:loc></image:image>
+    <image:image><image:loc>https://gmacmetalurgica.com.br/assets/gmac-real/caldeiraria.webp</image:loc></image:image>
+    <image:image><image:loc>https://gmacmetalurgica.com.br/assets/gmac-real/manutencao.webp</image:loc></image:image>
+    <image:image><image:loc>https://gmacmetalurgica.com.br/assets/gmac-real/detalhe-peca.webp</image:loc></image:image>
+    <image:image><image:loc>https://gmacmetalurgica.com.br/assets/gmac-real/servicos-tecnicos.webp</image:loc></image:image>
+    <image:image><image:loc>https://gmacmetalurgica.com.br/assets/gmac-real/componente-usinado.webp</image:loc></image:image>
+    <image:image><image:loc>https://gmacmetalurgica.com.br/assets/gmac-real/medicao.webp</image:loc></image:image>
+    <image:image><image:loc>https://gmacmetalurgica.com.br/assets/gmac-real/eixo-usinado.webp</image:loc></image:image>
+    <image:image><image:loc>https://gmacmetalurgica.com.br/assets/gmac-real/soldagem.webp</image:loc></image:image>
+    <image:image><image:loc>https://gmacmetalurgica.com.br/assets/gmac-real/torno-cnc.webp</image:loc></image:image>
+    <image:image><image:loc>https://gmacmetalurgica.com.br/assets/gmac-real/operacao-torno.webp</image:loc></image:image>
   </url>
-  <url><loc>https://gmacmetalurgica.com.br/privacidade.html</loc></url>
-  <url><loc>https://gmacmetalurgica.com.br/regras-orcamento.html</loc></url>
-  <url><loc>https://gmacmetalurgica.com.br/acessibilidade.html</loc></url>
+  <url><loc>https://gmacmetalurgica.com.br/privacidade.html</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://gmacmetalurgica.com.br/regras-orcamento.html</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://gmacmetalurgica.com.br/acessibilidade.html</loc><lastmod>2026-10-11</lastmod></url>
 </urlset>

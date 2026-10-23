@@ -17,7 +17,9 @@ e caminho angular curto.
 `mandrel.ts` constrói o mandril, ferramentas e transformações em Three.js.
 `scene.ts` cuida do enquadramento, iluminação de estúdio, efeitos e sombras.
 A geometria e os materiais são uma interpretação 3D das referências, não uma
-reprodução fotográfica. O módulo 3D carrega apenas ao se aproximar da seção.
+reprodução fotográfica. O módulo 3D carrega apenas ao se aproximar da seção,
+a partir da primeira interação do visitante (ou quando parte dela aparece na
+tela), para não travar a abertura da página no celular.
 As transições comuns duram 620 ms; operações duram entre 2,4 e 4,2 s,
 com movimento próprio de ferramenta/peça, e depois param. Clicar novamente
 na etapa reproduz a operação. Os textos ficam estáveis e somente

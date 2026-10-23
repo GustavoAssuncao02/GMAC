@@ -24,10 +24,20 @@ try {
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), canonical)
     assert.equal(await page.locator('meta[property="og:url"]').getAttribute('content'), canonical)
     assert.equal(await page.locator('h1').count(), 1)
-    const schema = JSON.parse(await page.locator('script[type="application/ld+json"]').textContent())
+    const description = await page.locator('meta[name="description"]').getAttribute('content')
+    assert.ok(description.length >= 120 && description.length <= 160, `description length ${description.length}`)
+    const graph = JSON.parse(await page.locator('script[type="application/ld+json"]').textContent())['@graph']
+    const schema = graph.find(node => node['@type'] === 'LocalBusiness')
     assert.equal(schema.url, canonical)
     assert.equal(schema.address.addressLocality, 'Feira de Santana')
     assert.equal(schema.hasOfferCatalog.itemListElement.length, 5)
+    assert.deepEqual(graph.map(node => node['@type']), ['LocalBusiness', 'WebSite', 'WebPage'])
+    const shareImage = await page.locator('meta[property="og:image"]').getAttribute('content')
+    assert.equal((await fetch(new URL(new URL(shareImage).pathname.slice(1), base))).status, 200, 'og:image')
+    const unlabeledImages = await page.locator('img').evaluateAll(images => images
+      .filter(image => !image.getAttribute('alt')?.trim() && !image.closest('[aria-hidden="true"]'))
+      .map(image => image.getAttribute('src')))
+    assert.deepEqual(unlabeledImages, [])
     for (const selector of ['#inicio', '#gmac', '#servicos', '#contato']) {
       const section = page.locator(selector)
       await section.scrollIntoViewIfNeeded()

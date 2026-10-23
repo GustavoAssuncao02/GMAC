@@ -49,16 +49,16 @@ try {
       await page.mouse.up()
       await assertRotating('autoplay resumes after dragging')
 
-      const step = page.locator('#processo li:visible').first()
+      const step = page.locator('#processo li:not([aria-hidden="true"]):visible').first()
       const before = await step.evaluate(element => ({ opacity: getComputedStyle(element).opacity, transform: getComputedStyle(element).transform }))
       assert.equal(before.opacity, '0', 'Process starts before its entrance, rather than at the final state')
       await step.evaluate(element => scrollTo({ top: element.getBoundingClientRect().top + scrollY - innerHeight / 2, behavior: 'instant' }))
-      await page.waitForFunction(() => [...document.querySelectorAll('#processo li')].some(element => {
+      await page.waitForFunction(() => [...document.querySelectorAll('#processo li:not([aria-hidden="true"])')].some(element => {
         const opacity = Number(getComputedStyle(element).opacity)
         return element.getBoundingClientRect().width > 0 && opacity > 0 && opacity < 1
       }))
       await page.waitForFunction(() => {
-        const element = [...document.querySelectorAll('#processo li')].find(element => element.getBoundingClientRect().width > 0)
+        const element = [...document.querySelectorAll('#processo li:not([aria-hidden="true"])')].find(element => element.getBoundingClientRect().width > 0)
         return getComputedStyle(element).opacity === '1' && getComputedStyle(element).transform === 'none'
       })
       const after = await step.evaluate(element => ({ opacity: getComputedStyle(element).opacity, transform: getComputedStyle(element).transform }))
