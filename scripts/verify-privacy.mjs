@@ -48,7 +48,7 @@ try {
     const popup = await popupPromise
     await popup.waitForLoadState('domcontentloaded')
     assert.match(await popup.locator('h1').innerText(), /Política de Privacidade/)
-    assert.match(await popup.locator('#retencao').innerText(), /30 dias/)
+    assert.match(await popup.locator('#retencao').innerText(), /relacionamento comercial/)
     await popup.close()
     assert.equal(await page.locator('#contactName').inputValue(), 'Revisão local sem envio', 'Opening the policy preserves the form')
 

@@ -1,0 +1,513 @@
+/* Página /OfertarServico: a identidade visual é a do portal da GMAC (modal "Inserir oferta manualmente"),
+   não a do site. Fonte, cores e medidas vêm de PORTAL GMAC/src/styles.css e mobile.css. */
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #151515;
+  background: #f7faff;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-width: 320px;
+  margin: 0;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.os-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 28px 24px 32px;
+}
+
+.os-logo {
+  width: 76px;
+  height: 76px;
+  margin-bottom: 18px;
+}
+
+.os-card {
+  width: min(100%, 720px);
+  padding: 29px 31px 25px;
+  border: 1px solid #dce6f0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 22px 60px rgba(10, 39, 75, 0.12);
+}
+
+.os-header {
+  margin-bottom: 23px;
+}
+
+.os-kicker {
+  display: block;
+  margin-bottom: 4px;
+  color: #3772a9;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.os-header h1 {
+  margin: 0;
+  color: #0b315d;
+  font-size: 24px;
+}
+
+.os-header p {
+  margin: 6px 0 0;
+  color: #7189a4;
+  font-size: 13px;
+}
+
+.os-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px 18px;
+}
+
+.os-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.os-field label,
+.os-label {
+  color: #193f6a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.os-field--full {
+  grid-column: 1 / -1;
+}
+
+.os-field input,
+.os-field textarea {
+  width: 100%;
+  border: 1px solid #d4deea;
+  border-radius: 7px;
+  outline: 0;
+  color: #17385e;
+  background: #ffffff;
+  font-size: 13px;
+}
+
+.os-field input {
+  height: 42px;
+  padding: 0 12px;
+}
+
+.os-field textarea {
+  min-height: 88px;
+  padding: 11px 12px;
+  resize: vertical;
+}
+
+.os-field input:focus,
+.os-field textarea:focus {
+  border-color: #0c4c91;
+  box-shadow: 0 0 0 3px rgba(12, 76, 145, 0.1);
+}
+
+.os-field input[aria-invalid="true"],
+.os-field textarea[aria-invalid="true"] {
+  border-color: #d4777e;
+}
+
+.os-field input::placeholder,
+.os-field textarea::placeholder {
+  color: #99a9b9;
+}
+
+.os-hint {
+  margin: -8px 0 0;
+  color: #7189a4;
+  font-size: 12px;
+}
+
+.os-field-error {
+  color: #a5212a;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.os-file-picker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 11px;
+  min-height: 42px;
+  padding: 5px 9px 5px 5px;
+  border: 1px dashed #b8c9dc;
+  border-radius: 7px;
+  color: #7890a9;
+  background: #f8fbff;
+  font-size: 12px;
+}
+
+.os-file-picker input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.os-file-picker button {
+  min-height: 30px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 5px;
+  color: #245985;
+  background: #e7f1fc;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.os-file-picker button:hover {
+  background: #d9e9fa;
+}
+
+.os-files,
+.os-uploads {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-files {
+  gap: 6px;
+  color: #17385e;
+  font-size: 13px;
+}
+
+.os-files li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.os-file-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: #17385e;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-file-size {
+  flex: 0 0 auto;
+  color: #7189a4;
+  font-size: 12px;
+}
+
+.os-files li button,
+.os-upload-failed button {
+  flex: 0 0 auto;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid #d5deea;
+  border-radius: 5px;
+  color: #31577f;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.os-files .os-files-total {
+  color: #7189a4;
+  font-size: 12px;
+}
+
+.os-consent {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 18px;
+}
+
+.os-consent label {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: #17385e;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.os-consent input {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin: 1px 0 0;
+  accent-color: #0c4c91;
+}
+
+.os-card a {
+  color: #0c4c91;
+  font-weight: 700;
+}
+
+.os-captcha {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-height: 65px;
+  margin-top: 18px;
+}
+
+.os-alert {
+  margin: 14px 0 0;
+  padding: 12px 16px;
+  border: 1px solid #e6b5b8;
+  border-radius: 8px;
+  color: #a5212a;
+  background: #fff1f2;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.os-alert a {
+  color: inherit;
+}
+
+.os-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 11px;
+  margin-top: 25px;
+}
+
+.os-submit,
+.os-secondary {
+  min-width: 108px;
+  height: 44px;
+  padding: 0 19px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.os-submit {
+  border: 1px solid #0c4c91;
+  color: #ffffff;
+  background: #0c4c91;
+  box-shadow: 0 4px 9px rgba(12, 76, 145, 0.16);
+}
+
+.os-submit:hover {
+  background: #093d75;
+}
+
+.os-submit:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.os-submit:disabled:hover {
+  background: #0c4c91;
+}
+
+.os-secondary {
+  border: 1px solid #d5deea;
+  color: #31577f;
+  background: #ffffff;
+}
+
+.os-submit:focus-visible,
+.os-secondary:focus-visible,
+.os-file-picker button:focus-visible,
+.os-files li button:focus-visible,
+.os-upload-failed button:focus-visible,
+.os-consent input:focus-visible,
+.os-card a:focus-visible {
+  outline: 2px solid #0c4c91;
+  outline-offset: 2px;
+}
+
+.os-sending-title {
+  margin: 0;
+  color: #0b315d;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.os-warning {
+  margin: 6px 0 0;
+  color: #7189a4;
+  font-size: 13px;
+}
+
+.os-total {
+  margin-top: 18px;
+}
+
+.os-total-text,
+.os-upload-text {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+  color: #193f6a;
+  font-size: 13px;
+}
+
+.os-total-text span {
+  color: #7189a4;
+  font-size: 12px;
+}
+
+.os-bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #e7eef6;
+}
+
+.os-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: #0c4c91;
+  transition: width 0.2s linear;
+}
+
+.os-bar--done span {
+  background: #35b945;
+}
+
+.os-uploads {
+  gap: 14px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e7ef;
+}
+
+.os-uploads .os-bar {
+  height: 6px;
+}
+
+.os-upload-failed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.os-done {
+  padding: 12px 0 8px;
+  text-align: center;
+}
+
+.os-done h2 {
+  margin: 12px 0 0;
+  color: #0b315d;
+  font-size: 20px;
+}
+
+.os-done p {
+  margin: 8px 0 0;
+  color: #4a5d72;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.os-footer {
+  margin: 20px 0 0;
+  color: #7189a4;
+  font-size: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-bar span {
+    transition: none;
+  }
+}
+
+/* Como o portal no celular: uma coluna, campos de 16 px (o iPhone não dá zoom ao focar) e toques de 44 px. */
+@media (max-width: 760px) {
+  .os-page {
+    padding: 16px 12px 24px;
+  }
+
+  .os-logo {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 14px;
+  }
+
+  .os-card {
+    padding: 20px 16px;
+    border-radius: 8px;
+  }
+
+  .os-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-header h1 {
+    font-size: 19px;
+    line-height: 1.35;
+  }
+
+  .os-field label,
+  .os-label,
+  .os-consent label {
+    font-size: 14px;
+  }
+
+  .os-field input,
+  .os-field textarea {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .os-consent input {
+    flex-basis: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .os-file-picker button,
+  .os-files li button,
+  .os-upload-failed button {
+    min-height: 44px;
+  }
+
+  .os-actions button {
+    flex: 1;
+    font-size: 14px;
+  }
+}
