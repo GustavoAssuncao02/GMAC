@@ -96,4 +96,4 @@ Validação: `node scripts/verify-seo.mjs <playwright/index.mjs> <url do build>`
 Referências:
 - https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics
 - https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
-- https://developers.google.com/search/docs/appearance/structured-data/local-business
+- https://developers.google.com/search/docs/appearance/structured-data/local-business 
